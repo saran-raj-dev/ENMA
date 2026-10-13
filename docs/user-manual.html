@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ENMA User Manual</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1f2937; --muted: #6b7280; --border: #e5e7eb;
+  --accent: #2563eb; --accent-soft: #eff6ff; --accent-line: #bfdbfe;
+  --ok: #15803d; --warn: #b45309; --warn-soft: #fffbeb; --warn-line: #fde68a;
+  --danger: #b91c1c; --danger-soft: #fef2f2; --danger-line: #fecaca;
+  --code-bg: #f3f4f6; --header: #111827;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115; --panel: #171a21; --text: #e5e7eb; --muted: #9ca3af; --border: #2a2f3a;
+    --accent: #60a5fa; --accent-soft: #172036; --accent-line: #1e3a8a;
+    --ok: #4ade80; --warn: #fbbf24; --warn-soft: #2a2312; --warn-line: #713f12;
+    --danger: #f87171; --danger-soft: #2a1616; --danger-line: #7f1d1d;
+    --code-bg: #1f2430; --header: #0b0d12;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1115; --panel: #171a21; --text: #e5e7eb; --muted: #9ca3af; --border: #2a2f3a;
+  --accent: #60a5fa; --accent-soft: #172036; --accent-line: #1e3a8a;
+  --ok: #4ade80; --warn: #fbbf24; --warn-soft: #2a2312; --warn-line: #713f12;
+  --danger: #f87171; --danger-soft: #2a1616; --danger-line: #7f1d1d;
+  --code-bg: #1f2430; --header: #0b0d12;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+header.top {
+  background: var(--header); color: #fff; padding: 28px 32px 24px;
+}
+header.top .brand { font-size: 30px; font-weight: 800; letter-spacing: 1px; }
+header.top .sub { color: #9ca3af; font-size: 15px; margin-top: 2px; }
+header.top .meta { color: #9ca3af; font-size: 13px; margin-top: 10px; }
+.layout { display: flex; max-width: 1280px; margin: 0 auto; }
+nav.toc {
+  width: 270px; flex: none; position: sticky; top: 0; align-self: flex-start;
+  max-height: 100vh; overflow-y: auto; padding: 24px 16px 40px 24px; font-size: 14px;
+}
+nav.toc .label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 8px; }
+nav.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: sec; }
+nav.toc li { margin: 1px 0; }
+nav.toc a { color: var(--text); text-decoration: none; display: block; padding: 3px 8px; border-radius: 6px; }
+nav.toc a:hover { background: var(--accent-soft); color: var(--accent); }
+nav.toc ol ol { padding-left: 12px; font-size: 13px; }
+nav.toc ol ol a { color: var(--muted); }
+main { flex: 1; min-width: 0; padding: 24px 32px 80px; }
+section { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 8px 28px 24px; margin-bottom: 22px; }
+h2 { font-size: 24px; margin: 22px 0 10px; padding-top: 4px; }
+h3 { font-size: 18px; margin: 26px 0 8px; }
+h4 { font-size: 15px; margin: 18px 0 6px; }
+p { margin: 8px 0; }
+a { color: var(--accent); }
+code, kbd, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+kbd { background: var(--code-bg); border: 1px solid var(--border); border-bottom-width: 2px; padding: 0 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 8px; overflow-x: auto; line-height: 1.45; }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0 14px; font-size: 14px; }
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+td.nowrap, th.nowrap { white-space: nowrap; }
+figure { margin: 14px 0 18px; }
+figure img { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; display: block; }
+figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.note, .tip, .warn {
+  border-radius: 8px; padding: 10px 14px; margin: 12px 0; border: 1px solid;
+}
+.note { background: var(--accent-soft); border-color: var(--accent-line); }
+.tip { background: var(--accent-soft); border-color: var(--accent-line); }
+.warn { background: var(--warn-soft); border-color: var(--warn-line); }
+.note b:first-child, .tip b:first-child, .warn b:first-child { display: inline-block; margin-right: 4px; }
+.steps { counter-reset: step; list-style: none; padding-left: 0; }
+.steps > li { counter-increment: step; position: relative; padding-left: 40px; margin: 10px 0; }
+.steps > li::before {
+  content: counter(step); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 6px;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center;
+}
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.card { border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; }
+.card h4 { margin-top: 2px; }
+.pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; color: #fff; }
+.pill.ok { background: #15803d; } .pill.warn { background: #b45309; } .pill.bad { background: #b91c1c; } .pill.grey { background: #4b5563; }
+.muted { color: var(--muted); }
+.scenario { border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin: 12px 0; }
+.scenario h4 { margin: 0 0 6px; }
+.scenario dl { display: grid; grid-template-columns: 150px 1fr; gap: 4px 14px; margin: 6px 0 0; font-size: 14px; }
+.scenario dt { color: var(--muted); }
+.scenario dd { margin: 0; }
+.themebtn {
+  position: fixed; right: 16px; bottom: 16px; border: 1px solid var(--border); background: var(--panel); color: var(--text);
+  border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+}
+@media (max-width: 900px) {
+  .layout { display: block; }
+  nav.toc { position: static; width: auto; max-height: none; padding: 16px; border-bottom: 1px solid var(--border); }
+  main { padding: 16px; }
+  section { padding: 4px 16px 18px; }
+  .grid2 { grid-template-columns: 1fr; }
+  .scenario dl { grid-template-columns: 1fr; }
+  header.top { padding: 22px 16px; }
+}
+@media print {
+  nav.toc, .themebtn { display: none; }
+  .layout { display: block; }
+  section { break-inside: avoid-page; border: none; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">ENMA</div>
+  <div class="sub">Engine for Network Modeling &amp; Automation · BACnet site simulator</div>
+  <div class="meta">User manual · version 1.0 · October 2026</div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <p class="label">Contents</p>
+  <ol>
+    <li><a href="#intro">1. What ENMA is</a></li>
+    <li><a href="#install">2. Requirements and starting</a></li>
+    <li><a href="#quickstart">3. Quick start (5 minutes)</a></li>
+    <li><a href="#concepts">4. Key concepts</a>
+      <ol>
+        <li><a href="#routed-direct">Routed and direct devices</a></li>
+        <li><a href="#ports">Ports, broadcasts and relay</a></li>
+        <li><a href="#objects">Objects and value changes</a></li>
+      </ol>
+    </li>
+    <li><a href="#window">5. The main window</a>
+      <ol>
+        <li><a href="#toolbar">Header and toolbar</a></li>
+        <li><a href="#tree">Site tree</a></li>
+        <li><a href="#statusbar">Status bar</a></li>
+      </ol>
+    </li>
+    <li><a href="#add">6. Adding devices</a></li>
+    <li><a href="#device-view">7. Device view</a></li>
+    <li><a href="#network-view">8. Network (router) view</a></li>
+    <li><a href="#group-view">9. Group view</a></li>
+    <li><a href="#cov-tab">10. COV subscriptions tab</a></li>
+    <li><a href="#scenarios">11. Scenarios</a></li>
+    <li><a href="#log">12. Activity log</a></li>
+    <li><a href="#saving">13. Saving and opening sites</a></li>
+    <li><a href="#headless">14. Headless mode</a></li>
+    <li><a href="#behaviour">15. Protocol behaviour reference</a>
+      <ol>
+        <li><a href="#b-services">Services</a></li>
+        <li><a href="#b-props">Objects and properties</a></li>
+        <li><a href="#b-write">Writes and priorities</a></li>
+        <li><a href="#b-cov">COV</a></li>
+        <li><a href="#b-seg">APDU size and segmentation</a></li>
+        <li><a href="#b-router">Router and network layer</a></li>
+        <li><a href="#b-bvll">BVLL and foreign devices</a></li>
+        <li><a href="#b-faults">Fault behaviour</a></li>
+      </ol>
+    </li>
+    <li><a href="#recipes">16. Test recipes for a BACnet client</a></li>
+    <li><a href="#trouble">17. Troubleshooting</a></li>
+    <li><a href="#limits">18. Limits and performance</a></li>
+    <li><a href="#dev">19. For developers</a></li>
+    <li><a href="#glossary">20. Glossary</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- 1 -->
+<section id="intro">
+<h2>1. What ENMA is</h2>
+<p>ENMA simulates a complete BACnet/IP site on one computer: controllers, the routers in front of their
+MS/TP trunks, and the problems real sites have. Use it to test BACnet client software such as gateways, supervisors,
+BMS front ends or tools like YABE before it reaches a live site.</p>
+<p>You create devices <b>by count</b>, choose how many support COV, decide how often their values change (so you can
+create stale points), and switch on faults such as silent controllers, flapping devices, slow answers, router buffer
+overflows (<i>Router-Busy</i>) or unreachable networks.</p>
+<div class="note"><b>Standard behaviour only.</b> Every packet ENMA sends follows ASHRAE 135: BVLL (Annex J), network
+layer (clause 6) and application layer encoding (clause 20). Nothing is tailored to a particular client. If a client
+misbehaves against ENMA, the client is at fault.</div>
+
+<h3>What you can simulate</h3>
+<div class="grid2">
+  <div class="card"><h4>Site</h4>
+    <ul>
+      <li>Any number of devices, in groups</li>
+      <li>Routed devices on MS/TP-style networks behind a router</li>
+      <li>Direct BACnet/IP devices, one UDP port each</li>
+      <li>AI, AO, AV, BI, BO, BV, MSI, MSV objects with realistic names and units</li>
+    </ul></div>
+  <div class="card"><h4>Values</h4>
+    <ul>
+      <li>Random change interval between a low and a high limit</li>
+      <li>A share of stale points (rare changes) or frozen points (never change)</li>
+      <li>Manual values, faults, out-of-service, deleted objects</li>
+      <li>Commandable objects with a 16-level priority array</li>
+    </ul></div>
+  <div class="card"><h4>COV</h4>
+    <ul>
+      <li>Per device: supported, not supported, or "accepts but never notifies"</li>
+      <li>Subscription slot limit per device</li>
+      <li>Objects that refuse COV individually</li>
+      <li>Confirmed and unconfirmed notifications, lifetimes, renewals</li>
+    </ul></div>
+  <div class="card"><h4>Faults</h4>
+    <ul>
+      <li>Silent (offline), flapping and rebooting devices</li>
+      <li>Slow replies, late Who-Is answers, packet loss</li>
+      <li>Slow MS/TP trunk with a router buffer that overflows into Router-Busy</li>
+      <li>Unreachable networks, trunk down, duplicate network numbers</li>
+      <li>Small max APDU without segmentation</li>
+    </ul></div>
+</div>
+</section>
+
+<!-- 2 -->
+<section id="install">
+<h2>2. Requirements and starting</h2>
+<h3>Requirements</h3>
+<ul>
+  <li>Python 3.8 or newer.</li>
+  <li>tkinter (included with the python.org installers and with Homebrew Python on macOS; on Debian/Ubuntu install
+    <code>python3-tk</code>).</li>
+  <li>No other packages. ENMA uses only the Python standard library.</li>
+  <li>macOS, Linux or Windows. On macOS the first start may ask whether Python may accept incoming network
+    connections: choose <b>Allow</b>.</li>
+</ul>
+<h3>Starting</h3>
+<p>Open a terminal in the ENMA folder and run:</p>
+<pre><code>python3 main.py</code></pre>
+<p>Other ways to start:</p>
+<div class="tablewrap"><table>
+  <tr><th>Command</th><th>What it does</th></tr>
+  <tr><td class="nowrap"><code>python3 main.py</code></td><td>Starts the application with its window.</td></tr>
+  <tr><td class="nowrap"><code>python3 -m enma</code></td><td>Same as <code>main.py</code>.</td></tr>
+  <tr><td class="nowrap"><code>python3 main.py --headless site.json [port]</code></td><td>Runs a saved site without a window
+    (see <a href="#headless">Headless mode</a>).</td></tr>
+  <tr><td class="nowrap"><code>python3 main.py --help</code></td><td>Prints the usage.</td></tr>
+</table></div>
+<p><code>main.py</code> can be started from any folder, for example <code>python3 ~/Desktop/ENMA/main.py</code>.</p>
+</section>
+
+<!-- 3 -->
+<section id="quickstart">
+<h2>3. Quick start (5 minutes)</h2>
+<figure><img src="images/01-welcome.jpg" alt="ENMA main window after start, with the welcome page"><figcaption>The window after start. The right side shows a short guide until you select something.</figcaption></figure>
+<ol class="steps">
+  <li><b>Add devices.</b> Press <b>＋ Add devices</b>. Keep the defaults (10 routed devices behind a router, 17
+    objects each, values changing every 10–60 seconds) and press <b>Create devices</b>.</li>
+  <li><b>Choose the interface.</b> In the toolbar, pick the network card that is on the same LAN as your BACnet client.
+    The broadcast address is shown next to the IP.</li>
+  <li><b>Start.</b> Press <b>▶ Start</b>. The pill at the top right turns green (<span class="pill ok">RUNNING</span>)
+    and UDP port 47808 opens.</li>
+  <li><b>Discover from the client.</b> Send a <i>global</i> Who-Is from your client to port 47808 on this network. The 10
+    devices answer with I-Am, as <code>1001:1</code>, <code>1001:2</code>, … behind the router at this computer's IP.</li>
+  <li><b>Read, write and subscribe.</b> Read objects, write commandable values, subscribe to COV. Watch the
+    <b>COV subscriptions</b> and <b>Activity log</b> tabs to see what the client does.</li>
+  <li><b>Break things.</b> Select a device and untick <b>Online</b>, reboot it, freeze points, or select the network and
+    press <b>Force Router-Busy</b>. Then check that your client copes.</li>
+</ol>
+<div class="tip"><b>Tip.</b> The <a href="#scenarios">Scenarios</a> tab sets up typical field problems in one click,
+each with a note on what a correct client should do.</div>
+</section>
+
+<!-- 4 -->
+<section id="concepts">
+<h2>4. Key concepts</h2>
+
+<h3 id="routed-direct">Routed and direct devices</h3>
+<p>Every group of devices is created either <b>routed</b> or <b>direct</b>:</p>
+<div class="tablewrap"><table>
+  <tr><th></th><th>Routed (behind a BACnet router)</th><th>Direct (BACnet/IP)</th></tr>
+  <tr><td>Like on site</td><td>MS/TP controllers on a trunk behind a BACnet/IP-to-MS/TP router</td><td>Controllers with their own Ethernet port</td></tr>
+  <tr><td>Address</td><td><code>network:MAC</code>, e.g. <code>1001:5</code>, reached through the router at <code>IP:port</code></td><td><code>IP:port</code>, e.g. <code>192.168.1.20:47809</code></td></tr>
+  <tr><td>UDP port</td><td>All share the router's port (default the main port 47808)</td><td>One port per device: 47809, 47810, …</td></tr>
+  <tr><td>Defaults</td><td>Max APDU 480, no segmentation</td><td>Max APDU 1476, segmented transmit</td></tr>
+  <tr><td>Router faults</td><td>Trunk speed, router buffer / Router-Busy, unreachable, trunk down</td><td>Not applicable</td></tr>
+</table></div>
+<p>A routed group is split into networks automatically: with <b>Devices per network</b> = 30, 100 devices become
+networks 1001, 1002, 1003 and 1004. Each network is one MS/TP trunk with MAC addresses starting at <b>First MAC
+address</b>.</p>
+
+<h3 id="ports">Ports, broadcasts and relay</h3>
+<ul>
+  <li><b>Main UDP port</b> (default 47808) is the standard BACnet/IP port. The simulated router lives here, and this is
+    where clients send their broadcasts.</li>
+  <li>Only one program on a computer can use a UDP port. Several BACnet/IP devices on one IP must therefore use
+    different ports, which is why each direct device has its own port.</li>
+  <li>With <b>Relay broadcasts to other ports</b> switched on (default), a broadcast Who-Is or
+    Who-Is-Router-To-Network that arrives on the main port is also passed to the devices and routers on the other ports.
+    One global Who-Is then finds the whole site.</li>
+  <li>Like a real router, the simulated router passes only <b>global</b> broadcasts (DNET 65535) and broadcasts
+    directed at one of its networks to the devices behind it. A local broadcast Who-Is (no DNET) reaches only the direct
+    devices.</li>
+  <li><b>I-Am replies</b> controls how devices answer Who-Is (and how routers answer Who-Is-Router-To-Network):
+    <ul>
+      <li><b>Unicast</b> (default): straight back to the address that asked. Works across subnets, through Docker and with a client on the same computer.</li>
+      <li><b>Broadcast</b>: to the whole subnet on the main port, the classic behaviour.</li>
+      <li><b>Both</b>: unicast and broadcast.</li>
+    </ul></li>
+</ul>
+
+<h3 id="objects">Objects and value changes</h3>
+<p>Each device gets objects of the types and counts you choose. Names follow common HVAC points
+(<i>Supply Air Temp</i>, <i>Supply Fan Status</i>, <i>Operating Mode</i>, …) with matching units and value ranges.
+Object instances start at 1 for each type.</p>
+<ul>
+  <li><b>Changes:</b> every object waits a random time between its low and high limit, changes, and waits again.</li>
+  <li><b>Analog</b> values move randomly within their range. Most steps are at least the COV increment, so COV
+    subscribers see them; some are smaller (visible only by polling).</li>
+  <li><b>Binary</b> values toggle. <b>Multi-state</b> values move to another state.</li>
+  <li><b>Stale</b> objects use a separate, long interval (for example every 30–120 minutes). <b>Frozen</b> objects
+    never change.</li>
+  <li><b>Commandable</b> objects (AO, AV, BO, BV, MSV) have a priority array. The simulated changes act on the relinquish
+    default, so a value written by a client at a priority stays until it is relinquished.</li>
+</ul>
+<p>Values only change while the simulation is running.</p>
+</section>
+
+<!-- 5 -->
+<section id="window">
+<h2>5. The main window</h2>
+<figure><img src="images/03-device.jpg" alt="Main window with a site loaded and a device selected"><figcaption>Site tree on the left, details of the selected device on the right.</figcaption></figure>
+
+<h3 id="toolbar">Header and toolbar</h3>
+<div class="tablewrap"><table>
+  <tr><th>Control</th><th>What it does</th></tr>
+  <tr><td>New site</td><td>Removes all devices (only while stopped).</td></tr>
+  <tr><td>Restore last</td><td>Loads the site that was open when ENMA was last closed. Enabled when such a site exists.</td></tr>
+  <tr><td>Open site… / Save site…</td><td>Load or save a site as a JSON file (see <a href="#saving">Saving</a>).</td></tr>
+  <tr><td>Status pill</td><td><span class="pill grey">STOPPED</span> or <span class="pill ok">RUNNING</span>.</td></tr>
+  <tr><td>▶ Start / ■ Stop</td><td>Start opens all UDP ports and starts value changes. Stop closes the ports. Stopping
+    also clears all COV subscriptions (as a power cycle would) and brings rebooting or flapping devices back.</td></tr>
+  <tr><td>Interface</td><td>The network the simulator broadcasts on: its IP and broadcast address. Locked while running.</td></tr>
+  <tr><td>Main UDP port</td><td>Default 47808. Locked while running.</td></tr>
+  <tr><td>I-Am replies</td><td>Unicast / Broadcast / Both (see <a href="#ports">Ports</a>). Can be changed while running.</td></tr>
+  <tr><td>Relay broadcasts to other ports</td><td>Pass broadcasts from the main port to the other ports. Can be changed while running.</td></tr>
+</table></div>
+
+<h3 id="tree">Site tree</h3>
+<p>The tree lists groups, their networks (for routed groups) and their devices. Click a row to see its details on the
+right. Select several rows with <kbd>Shift</kbd> or <kbd>⌘</kbd>/<kbd>Ctrl</kbd>.</p>
+<div class="tablewrap"><table>
+  <tr><th>Column</th><th>Meaning</th></tr>
+  <tr><td>Name</td><td>Group name, <i>Network n</i>, or the device name.</td></tr>
+  <tr><td>Instance</td><td>BACnet device instance.</td></tr>
+  <tr><td>Address</td><td><code>network:MAC</code> for routed devices, <code>IP:port</code> for direct devices. Network rows show their router port.</td></tr>
+  <tr><td>State</td><td>See the table below.</td></tr>
+  <tr><td>COV</td><td><code>COV</code> (supported), <code>COV 3/8</code> (supported, 3 of 8 slots used), <code>No COV</code>, <code>Mute COV</code> (accepts, never notifies).</td></tr>
+  <tr><td>Objects</td><td>Number of objects (not counting the device object).</td></tr>
+  <tr><td>Subs</td><td>Active COV subscriptions on the device.</td></tr>
+  <tr><td>Requests</td><td>Confirmed requests the device has received.</td></tr>
+</table></div>
+<h4>Device states</h4>
+<div class="tablewrap"><table>
+  <tr><th>State</th><th>Meaning</th></tr>
+  <tr><td><span class="pill ok">Online</span></td><td>Answering normally.</td></tr>
+  <tr><td><span class="pill bad">OFFLINE</span></td><td>Switched off by you: answers nothing.</td></tr>
+  <tr><td><span class="pill bad">Rebooting</span></td><td>Restarting (5 s), subscriptions lost; sends I-Am when back.</td></tr>
+  <tr><td><span class="pill bad">Down (flap)</span></td><td>Temporarily gone because of flapping.</td></tr>
+  <tr><td><span class="pill bad">Net down</span></td><td>Its network's trunk is down.</td></tr>
+  <tr><td><span class="pill warn">Flapping</span></td><td>Online now, will drop off again.</td></tr>
+  <tr><td><span class="pill warn">Slow</span></td><td>Has a reply or I-Am delay.</td></tr>
+  <tr><td><span class="pill warn">DCC off</span></td><td>A client disabled it with DeviceCommunicationControl.</td></tr>
+</table></div>
+<h4>Network states</h4>
+<p><code>OK</code> (instant trunk), <code>Queue n</code> (messages waiting for the trunk), <code>ROUTER BUSY</code>,
+<code>Unreachable</code>, <code>Trunk down</code>. Network rows turn red when they are not healthy.</p>
+<h4>Actions</h4>
+<ul>
+  <li><b>Filter</b>: shows only devices whose name, instance, address, state or COV text contains the typed text, e.g.
+    <code>OFFLINE</code>, <code>1003:</code> or <code>AHU-1</code>.</li>
+  <li><b>Selected: Online / Offline / Reboot / I-Am</b>: act on the selected devices. Selecting a group or network
+    acts on all its devices.</li>
+  <li><b>Remove</b>: removes the selected groups or devices.</li>
+  <li><b>Right-click</b> (or <kbd>Ctrl</kbd>-click on macOS) for the same actions plus <i>Clear COV subscriptions</i>.</li>
+</ul>
+
+<h3 id="statusbar">Status bar</h3>
+<p>Left: running time, IP and open ports, and registered foreign devices. Right: device count (online), object count,
+active COV subscriptions, packets received and sent, and the current packet rate.</p>
+</section>
+
+<!-- 6 -->
+<section id="add">
+<h2>6. Adding devices</h2>
+<p>Press <b>＋ Add devices</b> (or <b>Set up…</b> on a scenario). The form has seven sections. Hover over any label for
+a short explanation. The line at the bottom summarises what will be created.</p>
+<figure><img src="images/02-add-devices.jpg" alt="Add devices dialog"><figcaption>The Add devices form, here pre-filled by the "Router busy under load" scenario.</figcaption></figure>
+<div class="note"><b>How percentages work.</b> A percentage selects an exact number of devices (or objects), rounded,
+chosen at random. 30% of 10 devices is exactly 3 devices.</div>
+
+<h3>1 · Devices</h3>
+<div class="tablewrap"><table>
+  <tr><th>Field</th><th>Default</th><th>Meaning</th></tr>
+  <tr><td>Group name</td><td>Controllers</td><td>Label of the group in the tree. Also written to each device's <code>location</code>.</td></tr>
+  <tr><td>Number of devices</td><td>10</td><td>1 to 50,000 per group.</td></tr>
+  <tr><td>Device name prefix</td><td>DDC-</td><td>Devices are named prefix + number: <code>DDC-01</code>, <code>DDC-02</code>, …</td></tr>
+  <tr><td>First device instance</td><td>next free (from 1001)</td><td>Instances count up from here and must not exist yet (0–4,194,302).</td></tr>
+  <tr><td>Connection</td><td>Behind a BACnet router</td><td>Routed (MS/TP trunks) or directly on BACnet/IP.</td></tr>
+</table></div>
+
+<h3>2 · Addressing</h3>
+<div class="tablewrap"><table>
+  <tr><th>Field</th><th>Default</th><th>Meaning</th></tr>
+  <tr><td>Router UDP port</td><td>main port</td><td>Routed only. A port other than the main port acts as a second router.</td></tr>
+  <tr><td>First network number</td><td>next free (from 1001)</td><td>Routed only. Further networks take the next free numbers (1–65534).</td></tr>
+  <tr><td>Devices per network</td><td>30</td><td>Routed only. Devices on each trunk (1–254; MS/TP allows 127 masters).</td></tr>
+  <tr><td>First MAC address</td><td>1</td><td>Routed only. MAC of the first device on each network.</td></tr>
+  <tr><td>First UDP port</td><td>next free after the main port</td><td>Direct only. Ports already used by a device are skipped.</td></tr>
+</table></div>
+
+<h3>3 · Points per device</h3>
+<p>Number of objects of each type per device (0–5,000 each, up to 20,000 per device). Defaults: AI 4, AO 2, AV 3,
+BI 3, BO 2, BV 2, MSI 0, MSV 1 (17 objects).</p>
+
+<h3>4 · Value changes</h3>
+<div class="tablewrap"><table>
+  <tr><th>Field</th><th>Default</th><th>Meaning</th></tr>
+  <tr><td>Normal points change every</td><td>10 to 60 seconds</td><td>Each change waits a random time between the low and the high limit. Units: seconds, minutes or hours.</td></tr>
+  <tr><td>Stale points</td><td>0 %</td><td>Share of all objects in the group that are stale.</td></tr>
+  <tr><td>Stale points change every</td><td>30 to 120 minutes</td><td>Interval for stale objects.</td></tr>
+  <tr><td>Stale points never change (frozen)</td><td>off</td><td>Stale objects keep their value forever.</td></tr>
+  <tr><td>COV increment (analog)</td><td>0.5</td><td><code>covIncrement</code> of analog objects.</td></tr>
+</table></div>
+
+<h3>5 · COV (change of value)</h3>
+<div class="tablewrap"><table>
+  <tr><th>Field</th><th>Default</th><th>Meaning</th></tr>
+  <tr><td>Devices that support COV</td><td>100 %</td><td>These list SubscribeCOV in <code>protocolServicesSupported</code>. The others reject SubscribeCOV (<i>unrecognized-service</i>).</td></tr>
+  <tr><td>Max subscriptions per device</td><td>0 (unlimited)</td><td>Beyond this, SubscribeCOV gets Error <i>resources / no-space-to-add-list-element</i>.</td></tr>
+  <tr><td>Objects that refuse COV</td><td>0 %</td><td>Objects on COV devices that answer Error <i>object / optional-functionality-not-supported</i>.</td></tr>
+  <tr><td>COV devices that never notify</td><td>0 %</td><td>Accept the subscription (SimpleACK) but never send a notification.</td></tr>
+</table></div>
+
+<h3>6 · Faults</h3>
+<div class="tablewrap"><table>
+  <tr><th>Field</th><th>Default</th><th>Meaning</th></tr>
+  <tr><td>Silent (offline) devices</td><td>0 %</td><td>Never answer anything.</td></tr>
+  <tr><td>Flapping devices</td><td>0 %, every 5–15 min, down for 30–120 s</td><td>Drop off the network for a while and come back.</td></tr>
+  <tr><td>Flapping is a reboot</td><td>on</td><td>On: the device loses its COV subscriptions and sends I-Am when back. Off: it only stops answering for a while.</td></tr>
+  <tr><td>Slow devices</td><td>0 %, 500–3,000 ms</td><td>Every request is answered after a random delay in this range.</td></tr>
+  <tr><td>Late Who-Is answer</td><td>0 %, 10–15 s</td><td>I-Am is sent only after this delay.</td></tr>
+  <tr><td>Packet loss (all devices)</td><td>0 %</td><td>Share of requests silently lost.</td></tr>
+</table></div>
+
+<h3>7 · Router &amp; device limits</h3>
+<div class="tablewrap"><table>
+  <tr><th>Field</th><th>Default</th><th>Meaning</th></tr>
+  <tr><td>Trunk time per message (ms)</td><td>0 (instant)</td><td>Routed only. Each request delivered, I-Am answer or notification occupies the trunk for this long. 30–80 ms is typical of a busy 38,400 baud trunk.</td></tr>
+  <tr><td>Router buffer (messages)</td><td>0 (unlimited)</td><td>Routed only. When this many messages are waiting, new ones are dropped and Router-Busy-To-Network is sent.</td></tr>
+  <tr><td>Network unreachable</td><td>off</td><td>Routed only. The router stops announcing these networks and rejects traffic for them.</td></tr>
+  <tr><td>Max APDU</td><td>Auto</td><td>Auto = 480 for routed, 1476 for direct devices. Choices: 50, 128, 206, 480, 1024, 1476.</td></tr>
+  <tr><td>Segmentation</td><td>Auto</td><td>Auto = none for routed, segmented-transmit for direct devices.</td></tr>
+</table></div>
+<p>Press <b>Create devices</b>. If the simulation is running, the new ports open immediately. Any notes (for example
+about a duplicate network number) appear in a message.</p>
+</section>
+
+<!-- 7 -->
+<section id="device-view">
+<h2>7. Device view</h2>
+<p>Click a device in the tree.</p>
+<figure><img src="images/03-device.jpg" alt="Device view"><figcaption>Header with state and actions, behaviour settings, live counters and the object table.</figcaption></figure>
+<h3>Header</h3>
+<p>Name, state, and the address in full (for example <code>2001:1@192.168.0.169:47808</code>: network 2001, MAC 1,
+through the router at that IP and port), group, COV mode, max APDU and segmentation.</p>
+<ul>
+  <li><b>Reboot</b>: offline for 5 seconds, all COV subscriptions lost, I-Am broadcast when back.</li>
+  <li><b>Send I-Am</b>: broadcast an I-Am now.</li>
+  <li><b>Clear COV subs</b>: forget every subscription without telling the subscribers (as some devices do after a
+    power dip).</li>
+</ul>
+<h3>Behaviour</h3>
+<div class="tablewrap"><table>
+  <tr><th>Setting</th><th>Meaning</th></tr>
+  <tr><td>Online</td><td>Off = silent device: no I-Am, no answers, no errors.</td></tr>
+  <tr><td>COV</td><td><i>Supported</i>, <i>Not supported (no SubscribeCOV)</i>, <i>Accepts, never notifies</i>. Changing it increases <code>databaseRevision</code>; switching to not supported clears the subscriptions.</td></tr>
+  <tr><td>Max COV subscriptions</td><td>0 = unlimited.</td></tr>
+  <tr><td>Reply delay (ms)</td><td>Low–high range for every answer. 0–0 = immediate.</td></tr>
+  <tr><td>I-Am delay (s)</td><td>Extra delay before answering Who-Is.</td></tr>
+  <tr><td>Packet loss (%)</td><td>Share of requests ignored.</td></tr>
+  <tr><td>Flapping</td><td>Every <i>a–b</i> minutes, down for <i>c–d</i> seconds.</td></tr>
+  <tr><td>Flap = reboot</td><td>Whether flapping clears subscriptions and sends I-Am.</td></tr>
+  <tr><td>Max APDU / Segmentation</td><td>Largest answer the device sends, and whether it may segment longer answers.</td></tr>
+</table></div>
+<p><b>Apply</b> changes this device. <b>Apply to whole group</b> applies the same behaviour to every device of the group,
+except the Online switch.</p>
+<h3>Live</h3>
+<p>Counters since the device was created: requests, reads, writes, subscribes, renewals, cancels, COV refused,
+notifications sent, notification failures, errors sent, requests lost to packet loss, requests ignored while offline,
+I-Am sent, active subscriptions, time of the last request, <code>databaseRevision</code>, time to the next flap and
+time until it is back.</p>
+<h3>Objects</h3>
+<div class="tablewrap"><table>
+  <tr><th>Column</th><th>Meaning</th></tr>
+  <tr><td>Object</td><td>Type and instance, e.g. <code>AI:1</code>.</td></tr>
+  <tr><td>Value</td><td>Present value. Binary and multi-state show the state text and number.</td></tr>
+  <tr><td>Changes every</td><td>The interval, or <i>never (frozen)</i>.</td></tr>
+  <tr><td>Next / Last change</td><td>Time to the next change and time of the last one.</td></tr>
+  <tr><td>COV</td><td><i>yes</i>, <i>no (refuses)</i>, or <i>-</i> when the device has no COV.</td></tr>
+  <tr><td>Subs / Reads</td><td>Subscriptions on this object and how often its present value was read.</td></tr>
+  <tr><td>Flags</td><td><code>stale</code>, <code>FAULT</code>, <code>OOS</code> (out of service), <code>cmd@8</code> (commanded at priority 8), <code>DELETED</code>.</td></tr>
+</table></div>
+<p>Select one or more objects, then:</p>
+<div class="tablewrap"><table>
+  <tr><th>Button</th><th>Effect</th></tr>
+  <tr><td>Set value… (or double-click)</td><td>Sets the value of inputs, or the relinquish default of commandable objects. Accepts a number; 0/1 or the state text for binary; the state number or text for multi-state. If the object is commanded at a priority, the present value stays at the commanded value.</td></tr>
+  <tr><td>Change interval…</td><td>New low/high limits, or <i>Never change</i> to freeze.</td></tr>
+  <tr><td>Freeze / unfreeze</td><td>Toggles frozen.</td></tr>
+  <tr><td>Relinquish all</td><td>Clears the priority array.</td></tr>
+  <tr><td>Fault</td><td>Toggles the FAULT status flag and <code>reliability</code> (unreliable-other). COV subscribers are notified.</td></tr>
+  <tr><td>Out of service</td><td>Toggles <code>outOfService</code>. Inputs accept writes to their present value while out of service.</td></tr>
+  <tr><td>COV on/off</td><td>Whether this object accepts SubscribeCOV. Turning it off removes its subscriptions.</td></tr>
+  <tr><td>Delete</td><td>Removes the object from <code>objectList</code>. Reads then get <i>unknown-object</i> (a "dead point"). <code>databaseRevision</code> increases.</td></tr>
+  <tr><td>Restore</td><td>Brings a deleted object back.</td></tr>
+</table></div>
+</section>
+
+<!-- 8 -->
+<section id="network-view">
+<h2>8. Network (router) view</h2>
+<p>Click a <i>Network n</i> row. It shows one MS/TP-style trunk behind the simulated router.</p>
+<figure><img src="images/04-network.jpg" alt="Network view showing ROUTER BUSY"><figcaption>A network whose router buffer overflowed.</figcaption></figure>
+<div class="tablewrap"><table>
+  <tr><th>Setting / action</th><th>Effect</th></tr>
+  <tr><td>Trunk time per message</td><td>See <a href="#add">section 6, part 7</a>. Setting it to 0 delivers anything still queued at once.</td></tr>
+  <tr><td>Router buffer</td><td>Queue limit before Router-Busy.</td></tr>
+  <tr><td>Unreachable</td><td>Router stops announcing the network; requests get Reject-Message-To-Network. Clearing it announces the network again.</td></tr>
+  <tr><td>Trunk down</td><td>Router still announces the network, but no device behind it answers (a cut MS/TP cable).</td></tr>
+  <tr><td>Force Router-Busy for n s</td><td>Router-Busy-To-Network now, traffic to the network dropped for n seconds, then Router-Available-To-Network.</td></tr>
+  <tr><td>Announce route</td><td>Broadcast I-Am-Router-To-Network now.</td></tr>
+  <tr><td>I-Am storm</td><td>Every device on the network broadcasts I-Am at once, through the trunk.</td></tr>
+</table></div>
+<p>Live counters: devices, messages waiting for the trunk, peak queue, messages routed, messages dropped and
+Router-Busy events.</p>
+</section>
+
+<!-- 9 -->
+<section id="group-view">
+<h2>9. Group view</h2>
+<p>Click a group row.</p>
+<figure><img src="images/05-group.jpg" alt="Group view"><figcaption>Summary and whole-group actions.</figcaption></figure>
+<ul>
+  <li><b>Summary</b>: devices, online, COV supported / none / never notifies, flapping, slow, objects, stale and
+    frozen objects, objects refusing COV, active subscriptions, read requests, notifications sent.</li>
+  <li><b>All online / All offline / Reboot all / I-Am from all / Clear COV subs</b> for every device of the group.
+    <i>Reboot all</i> recreates a site-wide power cut: all subscriptions lost, then I-Am from every device.</li>
+  <li><b>Change interval of all objects</b>, or of stale or normal objects only.</li>
+  <li><b>Remove this group</b> removes its devices and networks.</li>
+</ul>
+<p>To give every device of a group the same COV mode, delays or flapping, open any device of the group, set the
+behaviour and press <b>Apply to whole group</b>.</p>
+</section>
+
+<!-- 10 -->
+<section id="cov-tab">
+<h2>10. COV subscriptions tab</h2>
+<figure><img src="images/06-cov.jpg" alt="COV subscriptions tab"><figcaption>Every active subscription on every device.</figcaption></figure>
+<div class="tablewrap"><table>
+  <tr><th>Column</th><th>Meaning</th></tr>
+  <tr><td>Device, Object, Name</td><td>The monitored object.</td></tr>
+  <tr><td>Subscriber</td><td>Address the subscription came from (and where notifications go).</td></tr>
+  <tr><td>Process</td><td>Subscriber process identifier.</td></tr>
+  <tr><td>Notifications</td><td>Confirmed or unconfirmed.</td></tr>
+  <tr><td>Lifetime / Expires in</td><td>Requested lifetime and time left. <span style="color:var(--danger)">Red</span> = <b>INDEFINITE</b> (lifetime 0 or none given): it never expires on its own.</td></tr>
+  <tr><td>Renewals, Sent, Last sent, Failures</td><td>Renewals received, notifications sent, last notification, confirmed notifications not acknowledged.</td></tr>
+</table></div>
+<p><span style="color:var(--warn)">Orange</span> rows belong to devices that accept but never notify. <b>Clear all</b>
+makes every device forget its subscriptions. Up to 3,000 rows are shown; the heading gives the total.</p>
+<div class="warn"><b>Watch for indefinite subscriptions.</b> A client that "cancels" by subscribing with lifetime 0 creates
+a permanent subscription instead. It shows here in red.</div>
+</section>
+
+<!-- 11 -->
+<section id="scenarios">
+<h2>11. Scenarios</h2>
+<p>The Scenarios tab recreates field problems. <b>Set up…</b> opens the Add devices form already filled in; change
+anything (for example the count) and create. Several scenarios can run side by side.</p>
+<figure><img src="images/07-scenarios.jpg" alt="Scenarios tab"><figcaption>Each card describes the problem and what a correct client does.</figcaption></figure>
+
+<div class="scenario"><h4>Realistic mixed site</h4><dl>
+<dt>Creates</dt><dd>60 routed controllers on 2 trunks, 60% COV, 20% of objects stale (30–120 min), 5% silent, others change every 10–120 s.</dd>
+<dt>Client should</dt><dd>Discover every device, poll what cannot do COV, subscribe the rest, mark dead devices offline without hammering them.</dd></dl></div>
+
+<div class="scenario"><h4>Router busy under load (MS/TP trunk saturation)</h4><dl>
+<dt>Creates</dt><dd>40 devices on one trunk, 60 ms per message, router buffer 10, all COV.</dd>
+<dt>Shows</dt><dd>Bursts of subscribes or reads fill the buffer: Router-Busy-To-Network and dropped requests, then Router-Available-To-Network. Even one global Who-Is overflows it (40 I-Am answers), so one discovery finds only part of the trunk.</dd>
+<dt>Client should</dt><dd>Pace requests per network (one or two in flight), stop sending while busy, resume after Router-Available, no endless retries.</dd></dl></div>
+
+<div class="scenario"><h4>Controllers without COV</h4><dl>
+<dt>Creates</dt><dd>20 devices without SubscribeCOV in protocolServicesSupported.</dd>
+<dt>Client should</dt><dd>Read protocolServicesSupported first and poll; never retry a rejected subscription in a loop.</dd></dl></div>
+
+<div class="scenario"><h4>COV subscription slots exhausted</h4><dl>
+<dt>Creates</dt><dd>10 devices with 20 objects each but only 8 subscription slots.</dd>
+<dt>Client should</dt><dd>Treat <i>no-space-to-add-list-element</i> as a capacity limit and poll the remaining objects.</dd></dl></div>
+
+<div class="scenario"><h4>Some objects refuse COV</h4><dl>
+<dt>Creates</dt><dd>10 COV devices where half the objects answer <i>optional-functionality-not-supported</i>.</dd>
+<dt>Client should</dt><dd>Decide COV per object, not per device.</dd></dl></div>
+
+<div class="scenario"><h4>COV accepted but never notified</h4><dl>
+<dt>Creates</dt><dd>10 devices that acknowledge SubscribeCOV and never notify, not even the initial notification.</dd>
+<dt>Client should</dt><dd>Trust data, not the acknowledgement: keep a backup poll and flag the point.</dd></dl></div>
+
+<div class="scenario"><h4>Silent (dead) controllers</h4><dl>
+<dt>Creates</dt><dd>30 devices, 30% never answer.</dd>
+<dt>Client should</dt><dd>Mark them offline after a few misses and probe slowly instead of reading every point every cycle.</dd></dl></div>
+
+<div class="scenario"><h4>Flapping devices that forget subscriptions</h4><dl>
+<dt>Creates</dt><dd>20 devices, half drop off for 30–90 s every 3–6 min, restart, send I-Am and lose their subscriptions.</dd>
+<dt>Client should</dt><dd>Notice the restart and re-subscribe; values must not go stale silently.</dd></dl></div>
+
+<div class="scenario"><h4>Unreachable network (unknown route)</h4><dl>
+<dt>Creates</dt><dd>10 devices on network 3205, not announced by the router.</dd>
+<dt>Shows</dt><dd>Who-Is-Router-To-Network gets no answer (clients report <i>unknown route</i>); traffic sent through the router gets Reject-Message-To-Network.</dd>
+<dt>Client should</dt><dd>Hold the whole network after the first failure with a back-off.</dd></dl></div>
+
+<div class="scenario"><h4>Slow devices and late Who-Is answers</h4><dl>
+<dt>Creates</dt><dd>20 devices: half answer after 2–6 s, half answer Who-Is after 10–15 s.</dd>
+<dt>Client should</dt><dd>Use timeouts sized for slow MS/TP devices; a late I-Am must not mark a device as removed.</dd></dl></div>
+
+<div class="scenario"><h4>Stale points</h4><dl>
+<dt>Creates</dt><dd>10 devices, half of all objects frozen, the rest change every 30–120 s.</dd>
+<dt>Client should</dt><dd>Flag frozen points as stale and leave healthy ones alone; an online device with steady values is not a dead one.</dd></dl></div>
+
+<div class="scenario"><h4>Packet loss</h4><dl>
+<dt>Creates</dt><dd>10 devices losing 10% of requests.</dd>
+<dt>Client should</dt><dd>Recover with retries, without duplicate writes or false "offline" verdicts.</dd></dl></div>
+
+<div class="scenario"><h4>Large site (scale)</h4><dl>
+<dt>Creates</dt><dd>300 routed controllers, 30 objects each (9,000 points) on 6 trunks, 70% COV, 15% stale.</dd>
+<dt>Client should</dt><dd>Keep discovery, polling and COV renewals spread out, with no bursts per network.</dd></dl></div>
+
+<div class="scenario"><h4>Small APDU, no segmentation</h4><dl>
+<dt>Creates</dt><dd>3 devices with 200 objects each, max APDU 480, no segmentation.</dd>
+<dt>Shows</dt><dd>Reading the whole objectList or a large ReadPropertyMultiple gets Abort <i>segmentation-not-supported</i>.</dd>
+<dt>Client should</dt><dd>Fall back to <code>objectList[0]</code> and index-by-index reads, and size RPM requests to fit.</dd></dl></div>
+
+<div class="scenario"><h4>Duplicate network number (two routers)</h4><dl>
+<dt>Creates</dt><dd>A second router on another UDP port announcing network 1001, which an existing routed group already uses. Create a routed group with network 1001 first.</dd>
+<dt>Client should</dt><dd>Detect two routers for one network and report it; not flip-flop between them.</dd></dl></div>
+</section>
+
+<!-- 12 -->
+<section id="log">
+<h2>12. Activity log</h2>
+<figure><img src="images/08-log.jpg" alt="Activity log"><figcaption>Events colour-coded by kind.</figcaption></figure>
+<div class="tablewrap"><table>
+  <tr><th>Colour / kind</th><th>Examples</th></tr>
+  <tr><td>Info</td><td>Groups created, ports opened, site saved, simulation started or stopped.</td></tr>
+  <tr><td style="color:#7c3aed">COV</td><td>Subscribed (with lifetime; <b>INDEFINITE</b> is called out), cancelled, refused (slots full), expired, cleared, notification not acknowledged.</td></tr>
+  <tr><td style="color:#0369a1">Router</td><td>Buffer full → Router-Busy-To-Network, Router-Available-To-Network, forced busy, routes announced, network settings.</td></tr>
+  <tr><td style="color:#047857">Devices</td><td>Offline / online, rebooting, flapping, DeviceCommunicationControl, objects deleted or restored.</td></tr>
+  <tr><td style="color:#9d174d">Writes</td><td>Present value written or relinquished, with priority and new value.</td></tr>
+  <tr><td style="color:#b45309">Warnings</td><td>Duplicate network numbers, send failures, segmented replies timing out.</td></tr>
+  <tr><td style="color:#9ca3af">Traffic</td><td>With <b>Log traffic</b> on: one line per request and its answer (SimpleACK, ComplexACK, Error, Reject, Abort), Router-Busy and I-Am-Router replies.</td></tr>
+</table></div>
+<p><b>Show</b> filters by kind, <b>Search</b> (press <kbd>Enter</kbd>) filters by text, <b>Auto-scroll</b> follows new
+lines, <b>Clear</b> empties the view, <b>Save…</b> writes the log to a text file. The log keeps the last 20,000
+entries.</p>
+<div class="tip"><b>Tip.</b> Turn on <b>Log traffic</b> only while you look at a specific exchange; a busy site
+produces many lines per second.</div>
+</section>
+
+<!-- 13 -->
+<section id="saving">
+<h2>13. Saving and opening sites</h2>
+<ul>
+  <li><b>Save site…</b> writes the whole site to a JSON file: groups, networks and their router settings, every device
+    with its behaviour, and every object with its interval, stale/frozen flag, COV refusal, fault, out-of-service,
+    deleted state and current value. The main port, I-Am reply mode and relay setting are saved too.</li>
+  <li><b>Open site…</b> replaces the current site (stop the simulation first).</li>
+  <li>When you close ENMA, the current site is saved to <code>~/.enma/last_site.json</code>. <b>Restore last</b> loads
+    it.</li>
+  <li>Live state is not saved: COV subscriptions, counters, queues and a device that is rebooting or flapping down at
+    that moment (it is saved as online).</li>
+</ul>
+</section>
+
+<!-- 14 -->
+<section id="headless">
+<h2>14. Headless mode</h2>
+<p>Runs a saved site without a window, for servers, CI pipelines or long soak tests:</p>
+<pre><code>python3 main.py --headless my-site.json          # use the main port saved in the site
+python3 main.py --headless my-site.json 47900    # override the main port</code></pre>
+<p>The activity log is printed to the terminal. Press <kbd>Ctrl</kbd>+<kbd>C</kbd> to stop.</p>
+<div class="note"><b>Note.</b> The port argument moves only the main port (broadcast hub). Routers and direct devices
+keep the ports saved in the site.</div>
+</section>
+
+<!-- 15 -->
+<section id="behaviour">
+<h2>15. Protocol behaviour reference</h2>
+<p>This section describes exactly what ENMA sends, so you can tell expected behaviour from a client bug.</p>
+
+<h3 id="b-services">Services</h3>
+<div class="tablewrap"><table>
+  <tr><th>Service</th><th>Behaviour</th></tr>
+  <tr><td>Who-Is</td><td>Answered with I-Am (device instance, max APDU, segmentation, vendor ID) when the instance is in range, or no range is given. Routed devices answer only global or directed broadcasts.</td></tr>
+  <tr><td>Who-Has</td><td>By object identifier or name; answered with I-Have.</td></tr>
+  <tr><td>ReadProperty</td><td>Supports array indexes (index 0 = length). <code>all</code>, <code>required</code> and <code>optional</code> are rejected with Error <i>services / inconsistent-parameters</i>. Device instance 4194303 means "this device".</td></tr>
+  <tr><td>ReadPropertyMultiple</td><td>Supports <code>all</code>, <code>required</code>, <code>optional</code> and indexes. Errors are returned per property inside the ACK; an unknown object gives <i>unknown-object</i> for each property requested.</td></tr>
+  <tr><td>WriteProperty / WritePropertyMultiple</td><td>See <a href="#b-write">Writes</a>. For WPM, earlier writes stay applied when a later one fails; the error names the first failed write.</td></tr>
+  <tr><td>SubscribeCOV</td><td>See <a href="#b-cov">COV</a>.</td></tr>
+  <tr><td>DeviceCommunicationControl</td><td><i>disable</i>: the device answers only DCC and ReinitializeDevice. <i>disable-initiation</i>: no notifications and no unsolicited I-Am. Optional duration in minutes; any password is accepted.</td></tr>
+  <tr><td>ReinitializeDevice</td><td>Coldstart and warmstart: SimpleACK, then reboot (5 s offline, subscriptions lost, I-Am). Other states: Error <i>services / optional-functionality-not-supported</i>.</td></tr>
+  <tr><td>TimeSynchronization, UTCTimeSynchronization</td><td>Accepted and ignored.</td></tr>
+  <tr><td>Anything else (ReadRange, AtomicReadFile, SubscribeCOVProperty, …)</td><td>Reject <i>unrecognized-service</i>.</td></tr>
+</table></div>
+<p><code>protocolServicesSupported</code> lists ReadProperty, ReadPropertyMultiple, WriteProperty,
+WritePropertyMultiple, DeviceCommunicationControl, ReinitializeDevice, I-Am, I-Have, TimeSynchronization, Who-Has, Who-Is
+and UTCTimeSynchronization, plus SubscribeCOV on COV devices. Malformed requests get Reject <i>invalid-tag</i>,
+<i>missing-required-parameter</i>, <i>too-many-arguments</i> or <i>parameter-out-of-range</i>.</p>
+
+<h3 id="b-props">Objects and properties</h3>
+<div class="tablewrap"><table>
+  <tr><th>Object</th><th>Properties (besides objectIdentifier, objectName, objectType, propertyList)</th></tr>
+  <tr><td>Device</td><td>systemStatus, vendorName, vendorIdentifier (999), modelName, firmwareRevision, applicationSoftwareVersion, location, description, protocolVersion (1), protocolRevision (14), protocolServicesSupported, protocolObjectTypesSupported, objectList, maxApduLengthAccepted, segmentationSupported, maxSegmentsAccepted (when segmenting), apduTimeout (3000), numberOfApduRetries (3), deviceAddressBinding (empty), databaseRevision, localDate, localTime, utcOffset</td></tr>
+  <tr><td>AI</td><td>presentValue, description, statusFlags, eventState, reliability, outOfService, units, covIncrement</td></tr>
+  <tr><td>AO, AV</td><td>as AI + priorityArray, relinquishDefault</td></tr>
+  <tr><td>BI</td><td>presentValue, description, statusFlags, eventState, reliability, outOfService, polarity, inactiveText, activeText</td></tr>
+  <tr><td>BO</td><td>as BI + priorityArray, relinquishDefault</td></tr>
+  <tr><td>BV</td><td>as BI without polarity + priorityArray, relinquishDefault</td></tr>
+  <tr><td>MSI</td><td>presentValue, description, statusFlags, eventState, reliability, outOfService, numberOfStates, stateText</td></tr>
+  <tr><td>MSV</td><td>as MSI + priorityArray, relinquishDefault</td></tr>
+</table></div>
+<p>Errors: unknown object → <i>object / unknown-object</i>; property not in the object → <i>property /
+unknown-property</i>; index on a non-array → <i>property-is-not-an-array</i>; index out of range →
+<i>invalid-array-index</i>. <code>databaseRevision</code> increases when an object is deleted or restored and when the
+COV mode changes.</p>
+
+<h3 id="b-write">Writes and priorities</h3>
+<ul>
+  <li>Priority 1–16, default 16. Outside that range: Reject <i>parameter-out-of-range</i>.</li>
+  <li>Data types are checked strictly: analog needs REAL, binary ENUMERATED 0/1, multi-state UNSIGNED 1…numberOfStates.
+    Wrong type → <i>invalid-data-type</i>; out of range → <i>value-out-of-range</i>.</li>
+  <li>Commandable objects: the value goes into the priority array; NULL relinquishes that priority. The present value is
+    the highest-priority non-NULL entry, else the relinquish default.</li>
+  <li>Inputs (AI, BI, MSI): present value is writable only while <code>outOfService</code> is true, otherwise
+    <i>write-access-denied</i>.</li>
+  <li>Also writable: relinquishDefault, outOfService, covIncrement and description on objects; location and description on
+    the device. Anything else: <i>write-access-denied</i>.</li>
+</ul>
+
+<h3 id="b-cov">COV</h3>
+<ul>
+  <li>A subscription is identified by subscriber address + process identifier + object. Subscribing again renews it.</li>
+  <li>Lifetime 0, or no lifetime, means <b>indefinite</b>. SubscribeCOV with neither <i>issueConfirmed</i> nor
+    lifetime cancels; cancelling something that does not exist still gets a SimpleACK.</li>
+  <li>After every successful subscribe or renewal, an initial notification follows the SimpleACK.</li>
+  <li>Notifications carry presentValue and statusFlags. Analog: sent when the value moves by at least covIncrement since
+    the last notification. Binary and multi-state: on every change. Any statusFlags change (fault, out of service) is
+    always sent.</li>
+  <li>Confirmed notifications wait 3 s for an acknowledgement and are tried 4 times in total. Notifications from routed
+    devices pass through the trunk queue and can be dropped when the router buffer is full.</li>
+  <li>Subscriptions that are not renewed are removed when their lifetime ends. Reboots, flap-reboots, Stop and
+    "Clear COV subs" remove them without telling the subscriber.</li>
+  <li>Refusals: no SubscribeCOV → Reject <i>unrecognized-service</i>; object refuses or is the device object →
+    <i>object / optional-functionality-not-supported</i>; slots full → <i>resources /
+    no-space-to-add-list-element</i>.</li>
+</ul>
+
+<h3 id="b-seg">APDU size and segmentation</h3>
+<ul>
+  <li>An answer may be as long as the smaller of the device's max APDU and the client's max APDU (from the request).</li>
+  <li>Longer answers are segmented if the device supports segmentation and the client accepts segments; window size
+    from the client's SegmentACK, 3 s timeout, 3 retries. If the client accepts fewer segments than needed: Abort
+    <i>apdu-too-long</i>.</li>
+  <li>Otherwise: Abort <i>segmentation-not-supported</i>. Segmented requests are not accepted (Abort
+    <i>segmentation-not-supported</i>).</li>
+</ul>
+
+<h3 id="b-router">Router and network layer</h3>
+<div class="tablewrap"><table>
+  <tr><th>Message</th><th>Behaviour</th></tr>
+  <tr><td>Who-Is-Router-To-Network</td><td>Answered with I-Am-Router-To-Network for the requested network if this router reaches it, or with all reachable networks when none is given. Unreachable networks are never announced.</td></tr>
+  <tr><td>I-Am-Router-To-Network</td><td>Sent by each router when the simulation starts and when a network becomes reachable again. If another router announces a network ENMA owns, a duplicate warning is logged.</td></tr>
+  <tr><td>Initialize-Routing-Table (query)</td><td>Answered with Initialize-Routing-Table-Ack listing the reachable networks.</td></tr>
+  <tr><td>Traffic for an unknown or unreachable network</td><td>Reject-Message-To-Network, reason 1 (not directly connected), to the sender.</td></tr>
+  <tr><td>Router-Busy-To-Network</td><td>When the buffer is full or busy is forced: broadcast (at most once a second) and sent to the requester. The message is dropped.</td></tr>
+  <tr><td>Router-Available-To-Network</td><td>When the queue has drained to half the buffer, or the forced period ends: broadcast and sent to those that got Router-Busy.</td></tr>
+  <tr><td>Unknown network message types</td><td>Reject-Message-To-Network, reason 3.</td></tr>
+</table></div>
+<p><b>Trunk model:</b> each request delivered to a device, each answer to a broadcast (I-Am) and each notification from a
+routed device takes <i>trunk time</i> on its network, one after another. A Who-Is broadcast is one frame on the trunk;
+only matching devices' answers are queued. A device that does not exist on the network stays silent, as on MS/TP.</p>
+
+<h3 id="b-bvll">BVLL and foreign devices</h3>
+<ul>
+  <li>Original-Unicast-NPDU and Original-Broadcast-NPDU are handled normally; Forwarded-NPDU is answered to the original
+    source address.</li>
+  <li>Register-Foreign-Device is accepted (TTL + 30 s grace). A registered foreign device's Distribute-Broadcast-To-Network
+    is treated as a broadcast, and ENMA's broadcasts are forwarded to every registered foreign device. Use this for
+    clients on another subnet or inside Docker.</li>
+  <li>Read/Write-Broadcast-Distribution-Table, Read-FDT and Delete-FDT are answered with a BVLC-Result NAK.</li>
+  <li>ENMA ignores its own broadcasts when they come back to it.</li>
+</ul>
+
+<h3 id="b-faults">Fault behaviour</h3>
+<div class="tablewrap"><table>
+  <tr><th>Fault</th><th>On the wire</th></tr>
+  <tr><td>Offline</td><td>No answer to anything, including Who-Is.</td></tr>
+  <tr><td>Reboot</td><td>5 s offline, subscriptions and DCC state cleared, then a broadcast I-Am.</td></tr>
+  <tr><td>Flapping</td><td>Offline for the down time. With "flap = reboot": subscriptions cleared and I-Am when back.</td></tr>
+  <tr><td>Reply delay</td><td>Every request (including Who-Is) answered after the delay.</td></tr>
+  <tr><td>I-Am delay</td><td>Only Who-Is answers are delayed.</td></tr>
+  <tr><td>Packet loss</td><td>The request is ignored.</td></tr>
+  <tr><td>Trunk down</td><td>Route announced, devices behind it silent.</td></tr>
+  <tr><td>Unreachable</td><td>Route not announced, Reject-Message-To-Network for traffic to it.</td></tr>
+</table></div>
+</section>
+
+<!-- 16 -->
+<section id="recipes">
+<h2>16. Test recipes for a BACnet client</h2>
+<p>Each recipe gives the setup and what to check on the client (for example a gateway's logs or UI) and in ENMA.</p>
+
+<h3>Discovery across routers and ports</h3>
+<p><b>Setup:</b> one routed group (2 networks) and one direct group. <b>Do:</b> discover from the client.
+<b>Check:</b> every device is found with the right address; routed devices appear as <code>network:MAC</code> through the
+router. If routed devices are missing, the client's Who-Is is not a global broadcast.</p>
+
+<h3>COV capability detection</h3>
+<p><b>Setup:</b> scenarios <i>Controllers without COV</i>, <i>Some objects refuse COV</i> and <i>COV subscription slots
+exhausted</i>. <b>Check:</b> in the COV tab only allowed objects are subscribed; in the log, refusals happen once per
+object, not in a loop; refused objects are still updated by polling.</p>
+
+<h3>Router-Busy and pacing</h3>
+<p><b>Setup:</b> <i>Router busy under load</i>. <b>Do:</b> start the client with COV on all points. <b>Check:</b> the
+network view's <i>Dropped</i> and <i>Router-Busy events</i> counters stay low; the log shows few
+"buffer full" lines; the client does not send to the network while busy. Raise or lower the buffer to find the
+client's limit.</p>
+
+<h3>Dead and flapping devices</h3>
+<p><b>Setup:</b> <i>Silent controllers</i> and <i>Flapping devices</i>. <b>Check:</b> the <i>Ignored (offline)</i>
+counter on a silent device grows slowly (the client probes, not polls every point); after a flap the device's
+subscriptions reappear in the COV tab within the client's renewal time.</p>
+
+<h3>Stale point detection</h3>
+<p><b>Setup:</b> <i>Stale points</i>, or freeze chosen objects. <b>Check:</b> the client flags exactly the frozen objects
+as stale. Then unfreeze some and check the flag clears.</p>
+
+<h3>Unknown route</h3>
+<p><b>Setup:</b> <i>Unreachable network</i>. <b>Check:</b> the log shows few rejects, not one every few seconds per
+point. Clear <i>Unreachable</i> in the network view and check that the client recovers.</p>
+
+<h3>Writes and priorities</h3>
+<p><b>Do:</b> write a commandable object at priority 8 from the client, then relinquish. <b>Check:</b> the object's flags
+show <code>cmd@8</code>, then return to the relinquish default; the log shows each write with its priority. Writing an
+AI that is not out of service must be refused.</p>
+
+<h3>Lifetimes and renewals</h3>
+<p><b>Check</b> in the COV tab: lifetimes are not INDEFINITE (unless intended), <i>Expires in</i> never reaches 0
+before a renewal, and renewals are spread out rather than all at the same second.</p>
+
+<h3>Large objectLists</h3>
+<p><b>Setup:</b> <i>Small APDU, no segmentation</i>. <b>Check:</b> the client still discovers all 200 objects (using
+index reads), and its RPM requests fit in 480 bytes (no aborts in the traffic log).</p>
+
+<h3>Scale and soak</h3>
+<p><b>Setup:</b> <i>Large site</i> (or thousands of devices). Save the site and run it headless for hours.
+<b>Check:</b> the client's memory and CPU stay flat, COV subscriptions stay live, and the packet rate in the status bar
+is steady rather than bursty.</p>
+</section>
+
+<!-- 17 -->
+<section id="trouble">
+<h2>17. Troubleshooting</h2>
+<div class="tablewrap"><table>
+  <tr><th>Problem</th><th>Cause and fix</th></tr>
+  <tr><td>"UDP port 47808: Address already in use"</td><td>Another BACnet program on this computer (YABE, a gateway, another ENMA) owns the port. Close it, or give ENMA another main port. Only one program per computer can own a port.</td></tr>
+  <tr><td>The client finds nothing</td><td>Check that the right interface is chosen and that the client is on the same subnet. Allow Python through the firewall (macOS asks on first start). Try I-Am replies = Unicast. A client on another subnet or in Docker should register as a foreign device with ENMA or send unicast.</td></tr>
+  <tr><td>Client on the same computer finds nothing</td><td>Run the client on another port (e.g. 47900); 47808 belongs to ENMA and 47809+ to direct devices. Keep I-Am replies = Unicast so answers go back to the client's port.</td></tr>
+  <tr><td>Direct devices found, routed devices not</td><td>The client sends a local broadcast Who-Is. Routers forward only global broadcasts. Use a global Who-Is (DNET 65535).</td></tr>
+  <tr><td>Direct devices on 47809+ not found</td><td>Switch on <b>Relay broadcasts to other ports</b>, or point the client at each port.</td></tr>
+  <tr><td>Only part of a network is discovered</td><td>Expected with a small router buffer: the I-Am answers overflow it. Raise the buffer or trunk speed, or discover per network.</td></tr>
+  <tr><td>Reads time out on some devices</td><td>Check their state (offline, flapping, DCC off), their reply delay and packet loss, and the network (busy, trunk down).</td></tr>
+  <tr><td>"Cannot open site"</td><td>Stop the simulation first; the file must be a site saved by ENMA.</td></tr>
+  <tr><td>"tkinter is not available"</td><td>Install tkinter (<code>python3-tk</code> on Debian/Ubuntu) or use <a href="#headless">headless mode</a>.</td></tr>
+</table></div>
+</section>
+
+<!-- 18 -->
+<section id="limits">
+<h2>18. Limits and performance</h2>
+<ul>
+  <li>Per group: up to 50,000 devices, up to 20,000 objects per device, up to 2 million objects in total.</li>
+  <li>Tested with 5,000 devices and 100,000 objects: created in under a second; one global Who-Is answered by all 5,000
+    devices in about 0.1 s; the window stays responsive.</li>
+  <li>Routed networks hold up to 255 devices (MAC 0–254). Network numbers 1–65534. Device instances 0–4,194,302.</li>
+  <li>IPv4 BACnet/IP only (no BACnet/IPv6, MS/TP serial or BACnet/SC).</li>
+  <li>Objects: AI, AO, AV, BI, BO, BV, MSI, MSV and Device. No schedules, trends, alarms or intrinsic reporting.</li>
+</ul>
+</section>
+
+<!-- 19 -->
+<section id="dev">
+<h2>19. For developers</h2>
+<h3>Project layout</h3>
+<pre><code>main.py                     boots the application
+enma/
+  config.py                 product name, version, file locations
+  app.py                    command line entry point (GUI or --headless)
+  headless.py               run a saved site without the GUI
+  bacnet/                   protocol layer, no simulation logic
+    constants.py            enumerations and property tables
+    codec.py                tag encoding / decoding, BACnet error types
+    framing.py              APDU builders, NPDU and BVLL framing, addresses
+  core/                     simulation engine, no GUI code
+    model.py                objects (points) and COV subscriptions
+    device/                 one simulated device
+      base.py               identity, settings, life cycle, sending
+      dispatch.py           receiving and answering APDUs, segmentation, delays, loss
+      properties.py         object model: reading and writing properties
+      services.py           confirmed services
+      cov.py                subscription table and notifications
+    network.py              router networks (trunk queue, Router-Busy) and UDP endpoints
+    simulator/              the engine
+      base.py               engine thread, settings, start / stop
+      routing.py            BVLL / NPDU packet path, network layer messages
+      scheduler.py          value changes, lifetimes, flapping
+      builder.py            creating and removing groups, networks, devices, objects
+      operations.py         live changes requested by the user interface
+      snapshots.py          read-only state for the user interface
+      persistence.py        save / open a site as JSON
+    group.py, templates.py, scenarios.py, util.py
+  gui/                      tkinter user interface
+    app.py                  main window
+    add_dialog.py, interval_dialog.py
+    views/                  welcome, device, network and group views
+    theme.py, help_text.py</code></pre>
+
+<h3>Threading model</h3>
+<ul>
+  <li>The engine (<code>Simulator</code>) runs an asyncio event loop in its own thread. All engine state is read and
+    changed only in that thread.</li>
+  <li>Other threads call in with <code>sim.query(fn, *args)</code> (run a function in the engine thread and return its
+    result) or <code>sim.run_coro(coro)</code>.</li>
+  <li>The GUI turns off Python's automatic garbage collection and collects from its own timer, so tkinter objects are
+    always finalised on the Tk thread. Keep this if you change the GUI; otherwise the engine thread can deadlock with
+    the GUI.</li>
+</ul>
+
+<h3>Using the engine without the GUI</h3>
+<pre><code>from enma.core.simulator import Simulator
+
+sim = Simulator()
+sim.start_loop()
+sim.configure(main_port=47808)
+sim.query(sim.add_group, dict(name="Test", count=20, kind="routed", cov_pct=50, stale_pct=20))
+print(sim.run_coro(sim.start()))          # list of ports that failed to open
+print(sim.query(sim.snapshot_status))
+sim.query(sim.device_op, [1001], "offline")</code></pre>
+<p>The keys accepted by <code>add_group</code> are those of <code>DEFAULT_PARAMS</code> in
+<code>enma/core/templates.py</code>.</p>
+
+<h3>Extending</h3>
+<ul>
+  <li><b>New scenario:</b> add an entry to <code>SCENARIOS</code> in <code>enma/core/scenarios.py</code> (title, problem,
+    expect, params). It appears in the Scenarios tab automatically.</li>
+  <li><b>New point names:</b> edit the templates in <code>enma/core/templates.py</code>.</li>
+  <li><b>New confirmed service:</b> add a <code>svc_*</code> handler in <code>enma/core/device/services.py</code>,
+    register it in <code>_confirmed</code> (<code>dispatch.py</code>) and add its bit to
+    <code>DEVICE_SERVICE_BITS</code>.</li>
+  <li><b>New object type:</b> add its property list to <code>OBJECT_PROPS</code> (<code>bacnet/constants.py</code>),
+    reading and writing in <code>core/device/properties.py</code>, and generation in
+    <code>core/simulator/builder.py</code>.</li>
+</ul>
+</section>
+
+<!-- 20 -->
+<section id="glossary">
+<h2>20. Glossary</h2>
+<div class="tablewrap"><table>
+  <tr><th>Term</th><th>Meaning</th></tr>
+  <tr><td>APDU</td><td>Application-layer message: a request, an answer or an error.</td></tr>
+  <tr><td>BVLL</td><td>BACnet/IP's UDP wrapper (Annex J): unicast, broadcast, forwarded and foreign-device messages.</td></tr>
+  <tr><td>COV</td><td>Change of value: the device sends updates to subscribers instead of being polled.</td></tr>
+  <tr><td>covIncrement</td><td>Minimum change of an analog value that triggers a COV notification.</td></tr>
+  <tr><td>DNET / DADR, SNET / SADR</td><td>Destination / source network and MAC address in the network layer header, used to reach devices behind routers.</td></tr>
+  <tr><td>Foreign device</td><td>A BACnet/IP node on another subnet that registers with a BBMD to receive broadcasts.</td></tr>
+  <tr><td>Global broadcast</td><td>A broadcast with DNET 65535, forwarded by routers to every network.</td></tr>
+  <tr><td>Max APDU</td><td>Largest message a device sends or accepts in one piece (480 bytes on MS/TP, 1476 on BACnet/IP).</td></tr>
+  <tr><td>MS/TP</td><td>BACnet's RS-485 serial network. Slow; reached through a router.</td></tr>
+  <tr><td>Priority array</td><td>16 levels of commands on an output or value object; the highest non-NULL wins.</td></tr>
+  <tr><td>Router-Busy-To-Network</td><td>Router's message that it cannot take more traffic for a network for now.</td></tr>
+  <tr><td>Reject-Message-To-Network</td><td>Router's message that it cannot deliver to a network (for example, unknown).</td></tr>
+  <tr><td>Segmentation</td><td>Splitting a long answer into several messages.</td></tr>
+  <tr><td>Stale point</td><td>A point whose value has not changed (or not been updated) for a long time.</td></tr>
+</table></div>
+</section>
+
+</main>
+</div>
+
+<button class="themebtn" id="themebtn" type="button" aria-label="Switch light or dark theme">◐ Theme</button>
+<script>
+(function () {
+  var root = document.documentElement, key = "enma-manual-theme";
+  try { var saved = localStorage.getItem(key); if (saved) root.setAttribute("data-theme", saved); } catch (e) {}
+  document.getElementById("themebtn").addEventListener("click", function () {
+    var dark = root.getAttribute("data-theme") === "dark" ||
+      (!root.getAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    var next = dark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem(key, next); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
