@@ -42,7 +42,7 @@ TYPE_PARAM = {AI: "n_ai", AO: "n_ao", AV: "n_av", BI: "n_bi", BO: "n_bo", BV: "n
 UNIT_SECONDS = {"seconds": 1, "minutes": 60, "hours": 3600}
 
 DEFAULT_PARAMS = dict(
-    name="Controllers", prefix="DDC-", count=10, kind="routed",
+    name="Controllers", prefix="DDC-", count=10, kind="routed", direct_pct=50,
     start_instance=0, router_port=0, first_net=1001, per_net=30, first_mac=1, first_port=0,
     n_ai=4, n_ao=2, n_av=3, n_bi=3, n_bo=2, n_bv=2, n_msi=0, n_msv=1,
     chg_min=10, chg_max=60, chg_unit="seconds",

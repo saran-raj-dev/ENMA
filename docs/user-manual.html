@@ -149,7 +149,9 @@ figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
     <li><a href="#network-view">8. Network (router) view</a></li>
     <li><a href="#group-view">9. Group view</a></li>
     <li><a href="#cov-tab">10. COV subscriptions tab</a></li>
-    <li><a href="#scenarios">11. Scenarios</a></li>
+    <li><a href="#scenarios">11. Scenarios</a>
+      <ol><li><a href="#combined">Combining problems</a></li></ol>
+    </li>
     <li><a href="#log">12. Activity log</a></li>
     <li><a href="#saving">13. Saving and opening sites</a></li>
     <li><a href="#headless">14. Headless mode</a></li>
@@ -247,12 +249,22 @@ misbehaves against ENMA, the client is at fault.</div>
   <tr><td class="nowrap"><code>python3 main.py --help</code></td><td>Prints the usage.</td></tr>
 </table></div>
 <p><code>main.py</code> can be started from any folder, for example <code>python3 ~/Desktop/ENMA/main.py</code>.</p>
+<h3>Only one ENMA at a time</h3>
+<p>Only one copy of ENMA runs on a computer, so two simulators never fight over the BACnet ports. Starting ENMA again
+while it is running does not open a second copy: the running window is brought to the front and the new start exits
+with a message. If the running copy is headless, the message says so; stop it first (<kbd>Ctrl</kbd>+<kbd>C</kbd> in its
+terminal). ENMA checks this with a lock on localhost TCP port 47790 (local only, not BACnet).</p>
+<h3>Closing</h3>
+<p>Closing the window, <kbd>⌘</kbd>+<kbd>Q</kbd> / Dock → Quit, <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal, closing the
+terminal or <code>kill</code> all do the same: the simulation stops (every UDP port is closed), the site is saved for
+<b>Restore last</b>, and the process ends. Nothing keeps running in the background.</p>
 </section>
 
 <!-- 3 -->
 <section id="quickstart">
 <h2>3. Quick start (5 minutes)</h2>
-<figure><img src="images/01-welcome.jpg" alt="ENMA main window after start, with the welcome page"><figcaption>The window after start. The right side shows a short guide until you select something.</figcaption></figure>
+<figure><img src="images/01-welcome.jpg" alt="ENMA main window after start, with the welcome page"><figcaption>The window after start. The right side shows a short guide until you select something. (The
+screenshots in this manual were taken with the main port set to 47960 for testing; the default is 47808.)</figcaption></figure>
 <ol class="steps">
   <li><b>Add devices.</b> Press <b>＋ Add devices</b>. Keep the defaults (10 routed devices behind a router, 17
     objects each, values changing every 10–60 seconds) and press <b>Create devices</b>.</li>
@@ -276,7 +288,8 @@ each with a note on what a correct client should do.</div>
 <h2>4. Key concepts</h2>
 
 <h3 id="routed-direct">Routed and direct devices</h3>
-<p>Every group of devices is created either <b>routed</b> or <b>direct</b>:</p>
+<p>Every group of devices is <b>routed</b>, <b>direct</b>, or <b>mixed</b> (a percentage of the devices direct, the
+rest routed):</p>
 <div class="tablewrap"><table>
   <tr><th></th><th>Routed (behind a BACnet router)</th><th>Direct (BACnet/IP)</th></tr>
   <tr><td>Like on site</td><td>MS/TP controllers on a trunk behind a BACnet/IP-to-MS/TP router</td><td>Controllers with their own Ethernet port</td></tr>
@@ -285,6 +298,10 @@ each with a note on what a correct client should do.</div>
   <tr><td>Defaults</td><td>Max APDU 480, no segmentation</td><td>Max APDU 1476, segmented transmit</td></tr>
   <tr><td>Router faults</td><td>Trunk speed, router buffer / Router-Busy, unreachable, trunk down</td><td>Not applicable</td></tr>
 </table></div>
+<p>In a <b>mixed</b> group the first devices are routed and the rest are direct; with 50%, 30 devices become 15
+routed (instances 1001–1015 on network 1001) and 15 direct (1016–1030 on ports 47809 and up). Device faults (silent,
+flapping, slow, COV refusals, stale points, …) are spread over both parts at random. Router faults (trunk speed,
+buffer, unreachable network, duplicate network number) exist only for the routed part.</p>
 <p>A routed group is split into networks automatically: with <b>Devices per network</b> = 30, 100 devices become
 networks 1001, 1002, 1003 and 1004. Each network is one MS/TP trunk with MAC addresses starting at <b>First MAC
 address</b>.</p>
@@ -406,17 +423,17 @@ chosen at random. 30% of 10 devices is exactly 3 devices.</div>
   <tr><td>Number of devices</td><td>10</td><td>1 to 50,000 per group.</td></tr>
   <tr><td>Device name prefix</td><td>DDC-</td><td>Devices are named prefix + number: <code>DDC-01</code>, <code>DDC-02</code>, …</td></tr>
   <tr><td>First device instance</td><td>next free (from 1001)</td><td>Instances count up from here and must not exist yet (0–4,194,302).</td></tr>
-  <tr><td>Connection</td><td>Behind a BACnet router</td><td>Routed (MS/TP trunks) or directly on BACnet/IP.</td></tr>
+  <tr><td>Connection</td><td>Behind a BACnet router</td><td>Routed (MS/TP trunks), directly on BACnet/IP, or <b>Mixed</b>: the given percentage directly on BACnet/IP and the rest routed (default 50%). See <a href="#routed-direct">Routed and direct devices</a>.</td></tr>
 </table></div>
 
 <h3>2 · Addressing</h3>
 <div class="tablewrap"><table>
   <tr><th>Field</th><th>Default</th><th>Meaning</th></tr>
-  <tr><td>Router UDP port</td><td>main port</td><td>Routed only. A port other than the main port acts as a second router.</td></tr>
-  <tr><td>First network number</td><td>next free (from 1001)</td><td>Routed only. Further networks take the next free numbers (1–65534).</td></tr>
-  <tr><td>Devices per network</td><td>30</td><td>Routed only. Devices on each trunk (1–254; MS/TP allows 127 masters).</td></tr>
-  <tr><td>First MAC address</td><td>1</td><td>Routed only. MAC of the first device on each network.</td></tr>
-  <tr><td>First UDP port</td><td>next free after the main port</td><td>Direct only. Ports already used by a device are skipped.</td></tr>
+  <tr><td>Router UDP port</td><td>main port</td><td>Routed and mixed. A port other than the main port acts as a second router.</td></tr>
+  <tr><td>First network number</td><td>next free (from 1001)</td><td>Routed and mixed. Further networks take the next free numbers (1–65534).</td></tr>
+  <tr><td>Devices per network</td><td>30</td><td>Routed and mixed. Devices on each trunk (1–254; MS/TP allows 127 masters).</td></tr>
+  <tr><td>First MAC address</td><td>1</td><td>Routed and mixed. MAC of the first device on each network.</td></tr>
+  <tr><td>First UDP port</td><td>next free after the main port</td><td>Direct and mixed. Ports already used by a device or a router are skipped.</td></tr>
 </table></div>
 
 <h3>3 · Points per device</h3>
@@ -586,7 +603,41 @@ a permanent subscription instead. It shows here in red.</div>
 <h2>11. Scenarios</h2>
 <p>The Scenarios tab recreates field problems. <b>Set up…</b> opens the Add devices form already filled in; change
 anything (for example the count) and create. Several scenarios can run side by side.</p>
-<figure><img src="images/07-scenarios.jpg" alt="Scenarios tab"><figcaption>Each card describes the problem and what a correct client does.</figcaption></figure>
+<div class="note"><b>Half routed, half direct.</b> Every scenario creates a <b>mixed</b> group: half the devices behind
+the router (MS/TP style) and half directly on BACnet/IP, so the client is tested on both kinds at once. The device
+counts below are totals. Router faults in a scenario (busy trunk, unreachable network, duplicate network number)
+affect only the routed half; the direct half then shows how the same client handles healthy BACnet/IP devices next to
+them. Change <b>Connection</b> in the form to make a scenario fully routed or fully direct.</div>
+<figure><img src="images/07-scenarios.jpg" alt="Scenarios tab"><figcaption>The Scenarios tab: combined scenarios at the top, your saved scenarios, then the single problems.</figcaption></figure>
+
+<h3 id="combined">Combining problems</h3>
+<p>The top of the tab builds <b>one scenario from several problems</b>. Each chosen problem becomes its own group
+(named <i>scenario name: problem</i>), so the problems do not cancel each other out. A site-wide "unreachable network"
+would otherwise make every routed device unreachable. All parts share one routed / direct split.</p>
+<div class="tablewrap"><table>
+  <tr><th>Card</th><th>What it does</th></tr>
+  <tr><td><b>Everything at once</b></td><td>Opens the picker with every single problem ticked, at its usual device count
+    (558 devices, about 14,000 objects in total). Lower the counts if you want a smaller site.</td></tr>
+  <tr><td><b>Custom scenario</b></td><td>Opens the picker with nothing ticked: choose the problems you want.</td></tr>
+  <tr><td><b>Your scenarios</b></td><td>Combinations you saved. <b>Set up…</b> opens the picker with your choices;
+    <b>Delete</b> removes the saved entry (devices already created stay).</td></tr>
+</table></div>
+<figure><img src="images/09-custom-scenario.jpg" alt="Custom scenario picker"><figcaption>The picker: tick problems, set the devices for each, choose the share directly on BACnet/IP.</figcaption></figure>
+<p>In the picker:</p>
+<ul>
+  <li><b>Scenario name</b> prefixes every group it creates.</li>
+  <li><b>Directly on BACnet/IP %</b> applies to every part (default 50%). Router faults only affect the routed share.</li>
+  <li>Each row has a tick box and a <b>devices</b> count. <b>Select all</b> / <b>Select none</b> help with long lists.</li>
+  <li>The line at the bottom totals problems, devices (routed / direct) and objects.</li>
+  <li><b>Also save it to the Scenarios tab</b> keeps the combination under <i>Your scenarios</i> (stored in
+    <code>~/.enma/scenarios.json</code>; saving under an existing name replaces it).</li>
+  <li><b>Create scenario</b> builds every part. If one part cannot be created (for example, instance numbers run out),
+    the parts already created are removed again, so you never get half a scenario.</li>
+</ul>
+<p>The duplicate-network problem only shows a duplicate when another group already uses network 1001 (as it does in
+<i>Everything at once</i>, where the realistic site comes first).</p>
+
+<h3>Single problems</h3>
 
 <div class="scenario"><h4>Realistic mixed site</h4><dl>
 <dt>Creates</dt><dd>60 routed controllers on 2 trunks, 60% COV, 20% of objects stale (30–120 min), 5% silent, others change every 10–120 s.</dd>

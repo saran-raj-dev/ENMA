@@ -97,3 +97,33 @@ SCENARIOS = [
          expect="Detect two routers for one network and report it; do not flip-flop between them.",
          params=dict(name="Duplicate net", prefix="DUP-", count=5, first_net=1001, router_port=-1)),
 ]
+
+
+# Every scenario builds a mixed site: half the devices behind a router (MS/TP style), half directly on
+# BACnet/IP. Device faults apply to both halves; router faults (trunk speed, buffer, unreachable network,
+# duplicate network number) only exist for the routed half.
+for _sc in SCENARIOS:
+    _sc["params"].setdefault("kind", "mixed")
+    _sc["params"].setdefault("direct_pct", 50)
+
+
+def _slug(title):
+    return "".join(c if c.isalnum() else "-" for c in title.lower()).strip("-").replace("--", "-")
+
+
+for _sc in SCENARIOS:
+    _sc.setdefault("id", _slug(_sc["title"]))
+
+SCENARIO_BY_ID = {sc["id"]: sc for sc in SCENARIOS}
+
+# Built-in combined scenario: every problem above at once, each in its own group.
+EVERYTHING = dict(
+    id="everything",
+    title="Everything at once",
+    problem="Every scenario below in one site: busy trunk, no-COV and mute-COV controllers, exhausted slots, "
+            "per-object refusals, silent, flapping and slow devices, an unreachable network, stale points, packet "
+            "loss, a large site, small APDUs and a duplicate network number. Each problem gets its own group.",
+    expect="Stay stable and correct with every problem at once: no bursts, no endless retries, every "
+           "healthy device and point still up to date.",
+    parts=[dict(id=sc["id"], count=sc["params"].get("count", 10)) for sc in SCENARIOS],
+)

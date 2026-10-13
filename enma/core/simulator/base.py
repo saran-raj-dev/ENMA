@@ -77,6 +77,22 @@ class Simulator(RoutingMixin, SchedulerMixin, SiteBuilderMixin, OperationsMixin,
         self.loop.call_soon_threadsafe(run)
         return fut.result(timeout)
 
+    def shutdown(self, timeout=3.0):
+        """Stop the simulation (closing every UDP port) and end the engine thread."""
+        if not self.thread.is_alive():
+            return
+        try:
+            if self.running:
+                self.query(self.stop, timeout=timeout)
+        except Exception:
+            pass
+        def cancel_and_stop():
+            for task in asyncio.all_tasks(self.loop):
+                task.cancel()
+            self.loop.call_soon(self.loop.stop)          # after the cancelled tasks have finished
+        self.loop.call_soon_threadsafe(cancel_and_stop)
+        self.thread.join(timeout)
+
     def run_coro(self, coro, timeout=30.0):
         return asyncio.run_coroutine_threadsafe(coro, self.loop).result(timeout)
 

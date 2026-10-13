@@ -59,6 +59,14 @@ class SiteBuilderMixin:
         if count > 50000:
             raise ValueError("Up to 50,000 devices per group")
         kind = P["kind"]
+        if kind not in ("routed", "direct", "mixed"):
+            raise ValueError(f"Unknown connection type {kind!r}")
+        if kind == "mixed":
+            pct = max(0.0, min(100.0, float(P.get("direct_pct", 50))))
+            n_direct = int(round(count * pct / 100.0))
+        else:
+            n_direct = count if kind == "direct" else 0
+        n_routed = count - n_direct
         start = int(P["start_instance"]) or self.next_free_instance()
         if start < 0 or start + count - 1 >= WILDCARD_INSTANCE:
             raise ValueError("Device instances must be between 0 and 4194302")
@@ -76,8 +84,8 @@ class SiteBuilderMixin:
         warnings = []
         devices = []
 
-        # addressing
-        if kind == "routed":
+        # addressing: devices 0 .. n_routed-1 are routed, the rest are direct BACnet/IP
+        if n_routed:
             port = int(P["router_port"]) or self.main_port
             per_net = max(1, min(254, int(P["per_net"])))
             first_mac = max(0, min(254, int(P["first_mac"])))
@@ -87,7 +95,7 @@ class SiteBuilderMixin:
             if ep.port != self.main_port and not self.relay:
                 warnings.append(f"Router on port {port}: clients must send to that port "
                                 f"(broadcast relay from {self.main_port} is off)")
-            nets_needed = (count + per_net - 1) // per_net
+            nets_needed = (n_routed + per_net - 1) // per_net
             net_no = int(P["first_net"]) or self.next_free_network(port)
             numbers = []
             while len(numbers) < nets_needed:
@@ -110,7 +118,7 @@ class SiteBuilderMixin:
                 ep.networks[num] = net
                 nets.append(net)
             group.networks = nets
-        else:
+        if n_direct:
             first_port = int(P["first_port"]) or self.next_free_port()
             cursor = first_port
 
@@ -119,7 +127,8 @@ class SiteBuilderMixin:
         for i in range(count):
             inst = start + i
             dev = Device(self, group, inst, f"{P['prefix']}{i + 1:0{max(2, len(str(count)))}d}")
-            if kind == "routed":
+            routed = i < n_routed
+            if routed:
                 net = group.networks[i // per_net]
                 mac = first_mac + (i % per_net)
                 dev.network = net
@@ -129,7 +138,9 @@ class SiteBuilderMixin:
                 dev.max_apdu = 480
                 dev.segmentation = False
             else:
-                while cursor in self.endpoints and (self.endpoints[cursor].device is not None):
+                # skip ports that already host a device or a router: one node per direct device
+                while cursor in self.endpoints and (self.endpoints[cursor].device is not None
+                                                    or self.endpoints[cursor].networks):
                     cursor += 1
                 if cursor > 65535:
                     raise ValueError("Ran out of UDP ports")
@@ -144,7 +155,7 @@ class SiteBuilderMixin:
             if seg_p != "Auto":
                 dev.segmentation = seg_p == "Yes"
             dev.location = group.name
-            dev.description = f"Simulated {'routed (MS/TP)' if kind == 'routed' else 'BACnet/IP'} controller"
+            dev.description = f"Simulated {'routed (MS/TP)' if routed else 'BACnet/IP'} controller"
             devices.append(dev)
 
         # behaviour mix (exact percentages, random devices)
@@ -192,14 +203,55 @@ class SiteBuilderMixin:
         self.next_gid += 1
         self.version += 1
         npts = sum(len(d.order) for d in devices)
-        where = (f"networks {group.networks[0].number}-{group.networks[-1].number} behind router port "
-                 f"{group.networks[0].ep.port}" if kind == "routed"
-                 else f"UDP ports {devices[0].ep.port}-{devices[-1].ep.port}")
+        where = []
+        if n_routed:
+            where.append(f"{n_routed} routed on networks {group.networks[0].number}-{group.networks[-1].number} "
+                         f"behind router port {group.networks[0].ep.port}")
+        if n_direct:
+            where.append(f"{n_direct} direct on UDP ports {devices[n_routed].ep.port}-{devices[-1].ep.port}")
+        where = "; ".join(where)
         self.log(f"Created '{group.name}': {count} devices ({start}-{start + count - 1}), {npts} objects, {where}",
                  "info")
         for w in warnings:
             self.log(w, "warn")
         return group.gid, warnings
+
+    def add_composite(self, name, parts, direct_pct=50):
+        """Create several scenarios as one: one group per part, named '<name>: <part>'.
+
+        parts: [{"id": scenario id, "count": devices}]. All parts share the routed / direct split. If any
+        part cannot be created, the parts already created are removed again.
+        """
+        from enma.core.scenarios import SCENARIO_BY_ID
+        if not parts:
+            raise ValueError("Choose at least one scenario")
+        name = (name or "").strip() or "Custom"
+        created, warnings = [], []
+        try:
+            for part in parts:
+                sc = SCENARIO_BY_ID.get(part.get("id"))
+                if sc is None:
+                    raise ValueError(f"Unknown scenario {part.get('id')!r}")
+                P = dict(sc["params"])
+                P["count"] = int(part.get("count", P.get("count", 10)))
+                P["kind"] = "mixed"
+                P["direct_pct"] = float(direct_pct)
+                P["name"] = f"{name}: {P.get('name', sc['title'])}"
+                if P.get("router_port") == -1:
+                    P["router_port"] = self.next_free_port()
+                if P["count"] < 1:
+                    continue
+                gid, w = self.add_group(P)
+                created.append(gid)
+                warnings += w
+        except Exception:
+            for gid in created:
+                self.remove_group(gid)
+            raise
+        if not created:
+            raise ValueError("Every chosen scenario has 0 devices")
+        self.log(f"Scenario '{name}': {len(created)} groups created", "info")
+        return created, warnings
 
     def _make_points(self, dev, type_counts, P, nmul, smul):
         all_pts = []

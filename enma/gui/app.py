@@ -16,9 +16,11 @@ from tkinter import ttk, messagebox, filedialog
 import tkinter.font as tkfont
 
 from enma.config import APP_FULL_NAME, APP_NAME, AUTHOR_NAME, AUTHOR_URL, CONFIG_DIR, LAST_SITE
-from enma.core.scenarios import SCENARIOS
+from enma.core import user_scenarios
+from enma.core.scenarios import EVERYTHING, SCENARIO_BY_ID, SCENARIOS
 from enma.core.util import list_interfaces
 from enma.gui.add_dialog import AddDialog
+from enma.gui.combo_dialog import ComboDialog
 from enma.gui.help_text import HELP_TEXT
 from enma.gui.theme import (
     ACCENT,
@@ -70,7 +72,10 @@ class App:
         self._build_body()
         self._build_statusbar()
         self.show_welcome()
+        self._closing = False
         root.protocol("WM_DELETE_WINDOW", self.on_close)
+        if sys.platform == "darwin":
+            root.createcommand("::tk::mac::Quit", self.on_close)      # Cmd+Q, Dock > Quit
         root.after(300, self._drain_log)
         root.after(800, self._tick)
         if os.path.exists(LAST_SITE):
@@ -289,32 +294,83 @@ class App:
                           "Orange = device accepts but never notifies.", style="Sub.TLabel").pack(anchor="w", pady=(6, 0))
 
     def _build_scen_tab(self):
-        sf = ScrollFrame(self.tab_scen)
-        sf.pack(fill="both", expand=True)
-        body = sf.body
-        ttk.Label(body, text="Recreate a field problem", font=(self.font, 16, "bold")).pack(anchor="w", padx=14, pady=(12, 0))
-        intro = ttk.Label(body, text="Each scenario opens the Add devices form already filled in. Change the count "
-                                     "or anything else, then create. Several scenarios can run side by side.",
-                          style="Sub.TLabel", wraplength=760)
-        intro.pack(anchor="w", fill="x", padx=14, pady=(2, 8))
-        body.bind("<Configure>", lambda e: intro.configure(wraplength=max(200, e.width - 40)), add="+")
-        for sc in SCENARIOS:
-            card = tk.Frame(body, background=PANEL, highlightbackground="#e5e7eb", highlightthickness=1)
-            texts = []
-            card.pack(fill="x", padx=14, pady=5)
-            row = tk.Frame(card, background=PANEL)
-            row.pack(fill="x", padx=12, pady=(10, 2))
-            tk.Label(row, text=sc["title"], background=PANEL, foreground=TEXT,
-                     font=(self.font, 13, "bold")).pack(side="left")
-            ttk.Button(row, text="Set up…", style="Accent.TButton",
-                       command=lambda s=sc: self.add_devices(s)).pack(side="right")
-            texts.append(tk.Label(card, text=sc["problem"], background=PANEL, foreground=TEXT, wraplength=720,
-                                  justify="left", anchor="w"))
-            texts[-1].pack(fill="x", padx=12)
-            texts.append(tk.Label(card, text="Client should: " + sc["expect"], background=PANEL, foreground=MUTED,
+        self.scen_frame = ScrollFrame(self.tab_scen)
+        self.scen_frame.pack(fill="both", expand=True)
+        self._scen_wrap = []                       # intro labels that wrap with the tab width
+        self.scen_frame.body.bind("<Configure>", self._wrap_scenario_text, add="+")
+        self.rebuild_scenarios()
+
+    def _wrap_scenario_text(self, event):
+        self._scen_wrap = [l for l in self._scen_wrap if l.winfo_exists()]
+        for lbl in self._scen_wrap:
+            lbl.configure(wraplength=max(200, event.width - 40))
+
+    def _scenario_card(self, body, title, problem, expect=None, button="Set up…", command=None,
+                       accent=False, extra=None):
+        bg = "#eff6ff" if accent else PANEL
+        card = tk.Frame(body, background=bg, highlightbackground="#bfdbfe" if accent else "#e5e7eb",
+                        highlightthickness=1)
+        card.pack(fill="x", padx=14, pady=5)
+        row = tk.Frame(card, background=bg)
+        row.pack(fill="x", padx=12, pady=(10, 2))
+        tk.Label(row, text=title, background=bg, foreground=TEXT, font=(self.font, 13, "bold")).pack(side="left")
+        ttk.Button(row, text=button, style="Accent.TButton", command=command).pack(side="right")
+        if extra:
+            ttk.Button(row, text=extra[0], command=extra[1]).pack(side="right", padx=6)
+        texts = [tk.Label(card, text=problem, background=bg, foreground=TEXT, wraplength=720, justify="left",
+                          anchor="w")]
+        texts[-1].pack(fill="x", padx=12, pady=(0, 10 if not expect else 0))
+        if expect:
+            texts.append(tk.Label(card, text="Client should: " + expect, background=bg, foreground=MUTED,
                                   wraplength=720, justify="left", anchor="w"))
             texts[-1].pack(fill="x", padx=12, pady=(2, 10))
-            card.bind("<Configure>", lambda e, ls=texts: [l.configure(wraplength=max(200, e.width - 30)) for l in ls])
+        card.bind("<Configure>", lambda e, ls=texts: [l.configure(wraplength=max(200, e.width - 30)) for l in ls])
+
+    def _heading(self, body, text, sub=None):
+        ttk.Label(body, text=text, font=(self.font, 16, "bold")).pack(anchor="w", padx=14, pady=(14, 0))
+        if sub:
+            width = body.winfo_width()
+            lbl = ttk.Label(body, text=sub, style="Sub.TLabel", wraplength=max(200, width - 40) if width > 1 else 760)
+            lbl.pack(anchor="w", fill="x", padx=14, pady=(2, 6))
+            self._scen_wrap.append(lbl)
+
+    def rebuild_scenarios(self):
+        body = self.scen_frame.body
+        for w in body.winfo_children():
+            w.destroy()
+        self._heading(body, "Combine problems",
+                      "Build one site with several problems at once. Each problem gets its own group; all of them "
+                      "are half routed, half directly on BACnet/IP unless you change it.")
+        self._scenario_card(body, EVERYTHING["title"], EVERYTHING["problem"], EVERYTHING["expect"],
+                            command=lambda: ComboDialog(self, EVERYTHING, title=EVERYTHING["title"]), accent=True)
+        self._scenario_card(body, "Custom scenario",
+                            "Pick the problems you want from the list below, set how many devices each one gets, "
+                            "and create them as one scenario. Save it to find it again under 'Your scenarios'.",
+                            button="Build…", command=lambda: ComboDialog(self), accent=True)
+        saved = user_scenarios.load()
+        if saved:
+            self._heading(body, "Your scenarios")
+            for item in saved:
+                names = ", ".join(SCENARIO_BY_ID[p["id"]]["title"] for p in item["parts"])
+                devices = sum(p["count"] for p in item["parts"])
+                self._scenario_card(
+                    body, item["name"],
+                    f"{len(item['parts'])} problems, {devices:,} devices, {item['direct_pct']:g}% directly on "
+                    f"BACnet/IP: {names}.",
+                    command=lambda i=item: ComboDialog(self, i, title=f"Scenario: {i['name']}"),
+                    extra=("Delete", lambda i=item: self._delete_scenario(i["name"])))
+        self._heading(body, "Single problems",
+                      "Each scenario opens the Add devices form already filled in. Change the count or anything "
+                      "else, then create. Several scenarios can run side by side.")
+        for sc in SCENARIOS:
+            self._scenario_card(body, sc["title"], sc["problem"], sc["expect"],
+                                command=lambda s=sc: self.add_devices(s))
+
+    def _delete_scenario(self, name):
+        if messagebox.askyesno("Delete scenario", f"Delete the saved scenario '{name}'?\n"
+                                                  "Devices already created from it are not removed."):
+            user_scenarios.delete(name)
+            self.rebuild_scenarios()
 
     def _build_log_tab(self):
         f = ttk.Frame(self.tab_log, padding=10)
@@ -537,18 +593,45 @@ class App:
         self.log_lines.clear()
         self._rerender_log()
 
-    def on_close(self):
+    def bring_to_front(self, log=True):
+        """Show and raise the main window (also used when a second start of ENMA is blocked)."""
         try:
-            if self.sim.query(lambda: len(self.sim.groups)):
-                os.makedirs(CONFIG_DIR, exist_ok=True)
-                data = self.sim.query(self.sim.to_json, timeout=60)
-                with open(LAST_SITE, "w") as fh:
-                    json.dump(data, fh)
+            self.root.deiconify()
+            self.root.lift()
+            self.root.attributes("-topmost", True)
+            self.root.after(600, lambda: self.root.attributes("-topmost", False))
+            self.root.focus_force()
+        except tk.TclError:
+            return
+        if log:
+            self.sim.log("Another start of ENMA was blocked: only one copy runs at a time. This window was brought "
+                         "to the front.", "warn")
+
+    def on_close(self):
+        """Close button, Cmd+Q, Ctrl+C or kill: stop the simulation, save the site, close the window.
+
+        The process itself ends in enma.app.main once the window is gone.
+        """
+        if self._closing:
+            return
+        self._closing = True
+        try:
             if self.sim.running:
-                self.sim.query(self.sim.stop)
+                self.sim.query(self.sim.stop, timeout=5)          # frees every UDP port first
         except Exception:
             pass
-        self.root.destroy()
+        try:
+            if self.sim.query(lambda: len(self.sim.groups), timeout=5):
+                os.makedirs(CONFIG_DIR, exist_ok=True)
+                data = self.sim.query(self.sim.to_json, timeout=20)
+                with open(LAST_SITE, "w") as fh:
+                    json.dump(data, fh)
+        except Exception:
+            pass
+        try:
+            self.root.destroy()
+        except tk.TclError:
+            pass
 
     # ── tree ────────────────────────────────────────────────────────────────
     def after_structure_change(self, select=None):
@@ -588,7 +671,8 @@ class App:
                     continue
             giid = f"g{gid}"
             label = f"{gname}"
-            vals = ("", "routed" if kind == "routed" else "BACnet/IP", f"{len(devs)} devices", "", "", "", "")
+            vals = ("", {"routed": "routed", "direct": "BACnet/IP", "mixed": "routed + BACnet/IP"}.get(kind, kind),
+                    f"{len(devs)} devices", "", "", "", "")
             self.tree.insert("", "end", iid=giid, text=label, values=vals, tags=("group",),
                              open=giid not in old or giid in opened)
             self.tree_cache[giid] = vals

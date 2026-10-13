@@ -16,7 +16,13 @@ class GroupView(ttk.Frame):
         if snap is None:
             return
         ttk.Label(self, text=snap["name"], font=(app.font, 17, "bold")).pack(anchor="w")
-        kind = "Routed devices (behind a BACnet router)" if snap["kind"] == "routed" else "Direct BACnet/IP devices"
+        n_routed, n_direct = snap["routed"], snap["devices"] - snap["routed"]
+        if n_routed and n_direct:
+            kind = f"Mixed: {n_routed} routed (behind a BACnet router), {n_direct} direct BACnet/IP"
+        elif n_routed:
+            kind = "Routed devices (behind a BACnet router)"
+        else:
+            kind = "Direct BACnet/IP devices"
         nets = ", ".join(f"{n} (port {p})" for p, n in snap["networks"])
         ttk.Label(self, text=f"{kind} · instances {snap['first']}–{snap['last']}" + (f" · networks {nets}" if nets else ""),
                   style="Sub.TLabel", wraplength=760).pack(anchor="w", pady=(2, 8))

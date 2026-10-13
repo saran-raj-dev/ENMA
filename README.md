@@ -9,6 +9,10 @@ python3 main.py --headless site.json     # no GUI, runs a saved site
 python3 -m enma                          # same as main.py
 ```
 
+Only one ENMA runs per computer: starting it again brings the running window to the front. Closing
+the window (or Cmd+Q / Ctrl+C / kill) stops the simulation, frees every port, saves the site and ends
+the process.
+
 The full user manual is in [`docs/user-manual.html`](docs/user-manual.html).
 
 ## Project layout
@@ -36,7 +40,8 @@ front ends or by test scripts (`from enma.core.simulator import Simulator`).
 
 - **Devices by count**, either:
   - behind a simulated BACnet router on MS/TP-style networks (`network:MAC`), or
-  - directly on BACnet/IP, one UDP port each.
+  - directly on BACnet/IP, one UDP port each, or
+  - mixed: a percentage direct and the rest routed. Every scenario is half routed, half direct.
 - **Objects**: AI, AO, AV, BI, BO, BV, MSI and MSV, with priority arrays on the commandable ones.
 - **Value changes** at a random interval between a low and a high limit (seconds, minutes or hours).
   A chosen share of points can be stale (change rarely) or frozen (never change).
@@ -57,7 +62,8 @@ front ends or by test scripts (`from enma.core.simulator import Simulator`).
   - Duplicate network numbers.
 - **Limits**: no segmentation and small max APDU.
 
-The **Scenarios** tab recreates field problems in one click: Router-Busy from a burst, no-COV
+The **Scenarios** tab has "Everything at once" (all problems in one site), a **Custom scenario** builder
+(tick problems, set device counts, save the combination for reuse), and single problems in one click: Router-Busy from a burst, no-COV
 controllers, exhausted COV slots, mute COV, silent controllers, flapping, unknown route, slow
 devices, stale points, packet loss, large site, small APDU and duplicate network.
 

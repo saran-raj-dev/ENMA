@@ -85,6 +85,14 @@ class AddDialog:
         tip(ttk.Radiobutton(rf, text="Directly on BACnet/IP (one UDP port each)", value="direct",
                             variable=self.v["kind"], command=self._kind_changed),
             "Each device gets its own UDP port on this computer (47809, 47810, ...).").pack(anchor="w")
+        mf = ttk.Frame(rf)
+        mf.pack(anchor="w")
+        tip(ttk.Radiobutton(mf, text="Mixed:", value="mixed", variable=self.v["kind"], command=self._kind_changed),
+            "Part of the devices directly on BACnet/IP, the rest behind the router. Faults are spread over "
+            "both; router faults (trunk, buffer, unreachable) affect only the routed part.").pack(side="left")
+        self.direct_pct_spin = ttk.Spinbox(mf, from_=0, to=100, width=4, textvariable=self.v["direct_pct"])
+        self.direct_pct_spin.pack(side="left", padx=(4, 3))
+        ttk.Label(mf, text="% directly on BACnet/IP, rest routed").pack(side="left")
 
         # 2. addressing
         self.addr_frame = f = self._section(left, "2 · Addressing")
@@ -246,11 +254,25 @@ class AddDialog:
                      values=["seconds", "minutes", "hours"]).pack(side="left", padx=(6, 0))
 
     def _kind_changed(self):
-        routed = self.v["kind"].get() == "routed"
+        kind = self.v["kind"].get()
+        routed = kind in ("routed", "mixed")
+        direct = kind in ("direct", "mixed")
         for w in self.routed_rows + getattr(self, "net_rows", []):
             w.configure(state="normal" if routed else "disabled")
         for w in self.direct_rows:
-            w.configure(state="disabled" if routed else "normal")
+            w.configure(state="normal" if direct else "disabled")
+        self.direct_pct_spin.configure(state="normal" if kind == "mixed" else "disabled")
+
+    def _split(self, n):
+        """(routed, direct) device counts for n devices with the current form values."""
+        kind = self.v["kind"].get()
+        if kind == "routed":
+            return n, 0
+        if kind == "direct":
+            return 0, n
+        pct = max(0.0, min(100.0, float(self.v["direct_pct"].get() or 0)))
+        d = int(round(n * pct / 100.0))
+        return n - d, d
 
     def _update_summary(self):
         try:
@@ -258,15 +280,18 @@ class AddDialog:
             per = sum(int(float(self.v[k].get() or 0)) for k in TYPE_PARAM.values())
             self.pts_label.configure(text=f"{per} objects per device")
             txt = f"Will create {n:,} devices × {per} objects = {n * per:,} points"
-            if self.v["kind"].get() == "routed":
+            n_routed, n_direct = self._split(n)
+            parts = []
+            if n_routed:
                 pn = max(1, int(float(self.v["per_net"].get() or 1)))
-                nets = (n + pn - 1) // pn
+                nets = (n_routed + pn - 1) // pn
                 first = int(float(self.v["first_net"].get() or 0))
-                txt += (f" on {nets} network{'s' if nets != 1 else ''} ({first}"
-                        f"{'-' + str(first + nets - 1) if nets > 1 else ''}) behind router port "
-                        f"{self.v['router_port'].get()}")
-            else:
-                txt += f" on UDP ports from {self.v['first_port'].get()}"
+                parts.append(f"{n_routed:,} routed on {nets} network{'s' if nets != 1 else ''} ({first}"
+                             f"{'-' + str(first + nets - 1) if nets > 1 else ''}, router port "
+                             f"{self.v['router_port'].get()})")
+            if n_direct:
+                parts.append(f"{n_direct:,} direct on UDP ports from {self.v['first_port'].get()}")
+            txt += ": " + " + ".join(parts)
             self.summary.configure(text=txt, foreground=MUTED)
         except (ValueError, tk.TclError):
             self.summary.configure(text="Check the numbers", foreground=DANGER)
@@ -279,6 +304,7 @@ class AddDialog:
              "unreachable": v["unreachable"].get(), "max_apdu": v["max_apdu"].get(),
              "segmentation": v["segmentation"].get()}
         P["count"] = parse_num(v["count"], "Number of devices", 1, 50000, True)
+        P["direct_pct"] = parse_num(v["direct_pct"], "Share directly on BACnet/IP", 0, 100)
         P["start_instance"] = parse_num(v["start_instance"], "First device instance", 0, 4194302, True)
         P["router_port"] = parse_num(v["router_port"], "Router UDP port", 1, 65535, True)
         P["first_net"] = parse_num(v["first_net"], "First network number", 1, 65534, True)

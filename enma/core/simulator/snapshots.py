@@ -91,6 +91,7 @@ class SnapshotMixin:
         devs = g.devices
         pts = [p for d in devs for p in d.points.values()]
         return dict(gid=g.gid, name=g.name, kind=g.kind, devices=len(devs),
+                    routed=sum(1 for d in devs if d.network is not None),
                     online=sum(1 for d in devs if d.online),
                     cov_full=sum(1 for d in devs if d.cov_mode == "full"),
                     cov_none=sum(1 for d in devs if d.cov_mode == "none"),

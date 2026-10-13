@@ -23,6 +23,9 @@ HOW DEVICES ARE ADDRESSED
 • Direct devices each have their own UDP port on this computer's IP (47809, 47810, ...). Their
   address is IP:port. Because one IP can have only one device on 47808, the main port relays
   broadcasts (Who-Is, Who-Is-Router-To-Network) to the other ports ("Relay" switch at the top).
+• Mixed groups have both: a percentage of the devices directly on BACnet/IP, the rest behind the
+  router. Every scenario creates a mixed group, half and half. Router faults (trunk speed, buffer,
+  unreachable network) only affect the routed half.
 • Routers only forward GLOBAL broadcasts (DNET 65535) to remote networks, as real routers do. A
   local-broadcast Who-Is reaches only the direct devices.
 
@@ -54,6 +57,16 @@ Per network: MS/TP trunk time per message and router buffer (Router-Busy-To-Netw
 overflows), forced Router-Busy, unreachable network (Reject-Message-To-Network), trunk down.
 Duplicate network numbers: create two routed groups on different router ports with the same
 network number.
+
+SCENARIOS
+The Scenarios tab recreates field problems. "Everything at once" builds every problem in one site;
+"Custom scenario" lets you tick the problems you want, set device counts and save the combination
+under "Your scenarios". Each problem becomes its own group so their faults do not cancel out.
+
+ONE COPY AT A TIME, CLOSING
+Only one ENMA runs per computer: starting it again brings the running window to the front instead
+of opening a second copy. Closing the window (or Cmd+Q, Ctrl+C, kill) stops the simulation, closes
+every port, saves the site and ends the process.
 
 SAVING
 "Save site" writes everything (devices, objects, faults) to a JSON file; "Open site" loads it.
